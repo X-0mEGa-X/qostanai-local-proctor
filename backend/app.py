@@ -1,0 +1,299 @@
+import atexit
+from contextlib import asynccontextmanager
+from datetime import datetime, timezone
+import json
+import os
+from pathlib import Path
+import secrets
+import threading
+import time
+import uuid
+
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import FileResponse, JSONResponse, Response
+from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel, Field
+
+from .rules import TemporalRules
+from .vision import Vision, model_status
+from .windows_guard import WindowsGuard
+
+ROOT = Path(__file__).resolve().parents[1]
+TOKEN = secrets.token_urlsafe(32)
+PORT = int(os.environ.get('PROCTOR_PORT', '8765'))
+ORIGIN = f'http://127.0.0.1:{PORT}'
+
+class StartInput(BaseModel):
+    mode: str = 'simulation'
+    consent: bool = False
+    native_guard: bool = False
+    camera_index: int = Field(default=0, ge=0, le=9)
+
+class SecurityInput(BaseModel):
+    code: str = Field(max_length=80)
+
+class Monitor:
+    def __init__(self):
+        self.lock = threading.RLock()
+        self.active = False
+        self.mode = 'simulation'
+        self.session_id = None
+        self.events = []
+        self.rules = TemporalRules()
+        self.observation = {}
+        self.jpeg = None
+        self.started = 0
+        self.ended_at = None
+        self.elapsed_at_end = None
+        self.worker = None
+        self.error = None
+        self.latency_ms = 0
+        self.vision = None
+        self.stop_flag = threading.Event()
+        self.guard = WindowsGuard(self.security)
+        self.last_heartbeat = 0
+        self.security_last = {}
+        self.calibration_requested = False
+
+    def record(self, event):
+        with self.lock:
+            if not self.active:
+                return
+            event = dict(event, id=len(self.events)+1, timestamp=datetime.now(timezone.utc).isoformat(),
+                         elapsed_s=round(time.monotonic()-self.started, 1), source=self.mode)
+            self.events.append(event)
+            self.persist()
+
+    def security(self, code):
+        with self.lock:
+            now = time.monotonic()
+            if now - self.security_last.get(code, 0) < 1:
+                return
+            self.security_last[code] = now
+            self.record({'code': code, 'severity': 'medium', 'title': code.replace('_', ' ').capitalize()})
+
+    def report(self):
+        with self.lock:
+            return {'session_id': self.session_id, 'mode': self.mode, 'active': self.active,
+                    'started_at': self.started_at if self.session_id else None, 'ended_at': self.ended_at,
+                    'events': list(self.events), 'policy': 'Human review required; no automatic cheating verdict.',
+                    'privacy': 'No video or images saved. Event metadata stays on this computer.',
+                    'limits': ['Coarse calibrated gaze/head proxy', 'Phone raised is a position heuristic, not proof of photography',
+                               'Window protection is a prototype, not a managed OS lockdown']}
+
+    def persist(self):
+        if self.session_id:
+            folder = ROOT / 'data'
+            folder.mkdir(exist_ok=True)
+            path = folder / f'{self.session_id}.json'
+            tmp = path.with_suffix('.tmp')
+            tmp.write_text(json.dumps(self.report(), ensure_ascii=False, indent=2), encoding='utf-8')
+            tmp.replace(path)
+
+    def start(self, options):
+        with self.lock:
+            if self.active or (self.worker and self.worker.is_alive()):
+                raise HTTPException(409, 'A session is active or still stopping')
+            if not options.consent:
+                raise HTTPException(400, 'Consent is required')
+            if options.mode not in ('live', 'simulation'):
+                raise HTTPException(400, 'Invalid mode')
+            if options.mode == 'live' and not all(model_status().values()):
+                raise HTTPException(400, 'Install models first: python scripts/download_models.py')
+            self.active = True
+            self.mode = options.mode
+            self.session_id = str(uuid.uuid4())
+            self.events, self.observation = [], {}
+            self.security_last = {}
+            self.calibration_requested = False
+            self.rules = TemporalRules()
+            self.error, self.jpeg = None, None
+            self.started = time.monotonic()
+            self.started_at = datetime.now(timezone.utc).isoformat()
+            self.ended_at = None
+            self.elapsed_at_end = None
+            self.last_heartbeat = time.monotonic()
+            self.stop_flag = threading.Event()
+            self.guard = WindowsGuard(self.security)
+            if options.native_guard:
+                self.guard.start()
+                if not self.guard.enabled:
+                    self.security('native_guard_unavailable')
+            self.worker = threading.Thread(target=self.run, args=(options.camera_index,), daemon=True)
+            self.worker.start()
+            threading.Thread(target=self.watchdog, daemon=True).start()
+            self.persist()
+
+    def stop(self):
+        with self.lock:
+            self.active = False
+            self.stop_flag.set()
+            self.ended_at = self.ended_at or datetime.now(timezone.utc).isoformat()
+            if self.elapsed_at_end is None:
+                self.elapsed_at_end = round(time.monotonic()-self.started) if self.session_id else 0
+        self.guard.stop()
+        if self.worker and self.worker is not threading.current_thread():
+            self.worker.join(3)
+        with self.lock:
+            self.jpeg = None
+            self.persist()
+
+    def watchdog(self):
+        # Independent from vision so a stalled detector cannot keep keys blocked.
+        flag = self.stop_flag
+        while not flag.wait(.5):
+            with self.lock:
+                now = time.monotonic()
+                expired = self.active and (now-self.last_heartbeat > 20 or now-self.started > 3600)
+            if expired:
+                self.security('session_watchdog_released')
+                self.stop()
+                return
+
+    def simulation(self, elapsed):
+        stage = int(elapsed) % 40
+        obs = {'face_count': 1, 'phones': [], 'gaze': 'center', 'calibrated': True, 'calibration_samples': 20}
+        if 6 <= stage < 12:
+            obs['phones'] = [{'confidence': .92, 'bbox': [.57, .25, .73, .65], 'raised': True}]
+        if 14 <= stage < 20:
+            obs['gaze'] = 'down'
+        if 22 <= stage < 27:
+            obs['face_count'] = 2
+        if 29 <= stage < 35:
+            obs['face_count'] = 0
+            obs['gaze'] = 'unavailable'
+        if 36 <= stage < 40:
+            obs['gaze'] = 'left'
+        return obs
+
+    def run(self, camera_index):
+        cap = None
+        vision = None
+        try:
+            if self.mode == 'live':
+                import cv2
+                vision = Vision()
+                self.vision = vision
+                cap = cv2.VideoCapture(camera_index, cv2.CAP_DSHOW if os.name == 'nt' else cv2.CAP_ANY)
+                if not cap.isOpened():
+                    raise RuntimeError('Camera unavailable. Close other camera apps or try another index.')
+                cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+                cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+            while not self.stop_flag.is_set():
+                now = time.monotonic()
+                t0 = time.perf_counter()
+                jpeg = None
+                if self.mode == 'simulation':
+                    obs = self.simulation(now-self.started)
+                else:
+                    ok, frame = cap.read()
+                    if not ok:
+                        raise RuntimeError('Camera disconnected or frame read failed')
+                    with self.lock:
+                        if self.calibration_requested:
+                            vision.calibrate()
+                            self.calibration_requested = False
+                    obs, frame = vision.analyze(frame)
+                    ok, encoded = cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 75])
+                    if ok:
+                        jpeg = encoded.tobytes()
+                with self.lock:
+                    self.latency_ms = round((time.perf_counter()-t0)*1000)
+                    self.observation, self.jpeg = obs, jpeg
+                    for event in self.rules.update(obs, time.monotonic()):
+                        self.record(event)
+                self.stop_flag.wait(.15 if self.mode == 'live' else .25)
+        except Exception as error:
+            with self.lock:
+                self.error = str(error)
+                self.record({'code': 'monitor_error', 'severity': 'high', 'title': self.error})
+        finally:
+            if cap:
+                cap.release()
+            if vision:
+                vision.close()
+            self.vision = None
+            self.stop()
+
+monitor = Monitor()
+atexit.register(monitor.stop)
+
+@asynccontextmanager
+async def lifespan(app):
+    yield
+    monitor.stop()
+
+app = FastAPI(title='Qostanai Local Proctor', lifespan=lifespan, docs_url=None, redoc_url=None, openapi_url=None)
+
+@app.middleware('http')
+async def boundary(request: Request, call_next):
+    if request.headers.get('host') not in (f'127.0.0.1:{PORT}', f'localhost:{PORT}', 'testserver'):
+        return JSONResponse({'detail': 'Invalid host'}, status_code=403)
+    if request.url.path.startswith('/api/'):
+        if request.cookies.get('proctor_session') != TOKEN:
+            return JSONResponse({'detail': 'Open the application first'}, status_code=401)
+        if request.method != 'GET' and request.headers.get('origin') != ORIGIN:
+            return JSONResponse({'detail': 'Invalid origin'}, status_code=403)
+    response = await call_next(request)
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['Cache-Control'] = 'no-store'
+    response.headers['Content-Security-Policy'] = "default-src 'self'; style-src 'self'; img-src 'self' blob: data:; connect-src 'self'; frame-ancestors 'none'"
+    return response
+
+@app.get('/')
+def index():
+    response = FileResponse(ROOT / 'frontend/index.html')
+    response.set_cookie('proctor_session', TOKEN, httponly=True, samesite='strict')
+    return response
+
+@app.get('/health')
+def health():
+    return {'ok': True, 'application': 'qostanai-local-proctor'}
+
+@app.get('/api/status')
+def status():
+    with monitor.lock:
+        monitor.last_heartbeat = time.monotonic()
+        return {'active': monitor.active, 'mode': monitor.mode, 'session_id': monitor.session_id,
+                'observation': monitor.observation, 'events': list(monitor.events), 'error': monitor.error,
+                'elapsed_s': (round(time.monotonic()-monitor.started) if monitor.active else monitor.elapsed_at_end or 0),
+                'latency_ms': monitor.latency_ms, 'models': model_status(),
+                'native_guard': monitor.guard.enabled, 'guard_error': monitor.guard.error}
+
+@app.post('/api/start')
+def start(options: StartInput):
+    monitor.start(options)
+    return {'session_id': monitor.session_id}
+
+@app.post('/api/stop')
+def stop():
+    monitor.stop()
+    return monitor.report()
+
+@app.post('/api/calibrate')
+def calibrate():
+    with monitor.lock:
+        if not monitor.vision:
+            raise HTTPException(409, 'Live vision is not ready')
+        monitor.calibration_requested = True
+    return {'ok': True}
+
+@app.post('/api/security')
+def security(event: SecurityInput):
+    if event.code not in {'focus_lost', 'tab_hidden', 'fullscreen_left', 'clipboard_blocked', 'shortcut_blocked', 'navigation_blocked', 'window_blocked', 'emergency_exit', 'desktop_guard_started', 'desktop_guard_stopped'}:
+        raise HTTPException(400, 'Unknown event')
+    monitor.security(event.code)
+    return {'ok': True}
+
+@app.get('/api/frame')
+def frame():
+    with monitor.lock:
+        if not monitor.jpeg:
+            return Response(status_code=204)
+        return Response(monitor.jpeg, media_type='image/jpeg')
+
+@app.get('/api/report')
+def report():
+    return JSONResponse(monitor.report(), headers={'Content-Disposition': f'attachment; filename="proctor-{monitor.session_id or "empty"}.json"'})
+
+app.mount('/assets', StaticFiles(directory=ROOT / 'frontend'), name='assets')

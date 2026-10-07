@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Qostanai | Local Proctor</title><link rel="stylesheet" href="/assets/style.css"></head>
+<body>
+<aside class="sidebar">
+  <div class="brand"><span class="brand-mark">Q</span><div>QOSTANAI<span>LOCAL PROCTOR</span></div></div>
+  <div class="workspace-label">EXAM WORKSPACE</div>
+  <div class="nav-item selected"><span>◈</span> Session monitor <b>01</b></div>
+  <div class="nav-item"><span>▤</span> Review &amp; report <b>02</b></div>
+  <div class="sidebar-card"><span class="tiny-tag">LOCAL BY DESIGN</span><h3>Your laptop.<br>Your data.</h3><p>Camera inference runs on-device. No video is uploaded or saved.</p><div class="offline-dot">Offline after setup</div></div>
+  <div class="sidebar-footer">CASE 03 · KRU × QOSTANAI HUB<br>Industry Hackathon 2026</div>
+</aside>
+<main>
+  <header><div class="breadcrumb">Workspace <span>/</span> Session monitor</div><div class="header-right"><span id="runtime" class="runtime">BROWSER PREVIEW</span><span class="avatar">Q</span></div></header>
+  <section class="page-heading"><div><div class="eyebrow">A CLEARER VIEW OF EXAM INTEGRITY</div><h1>Session monitor<span>.</span></h1><p>Observe signals. Review context. Keep decisions human.</p></div><div class="session-meta"><span id="session-label">NO ACTIVE SESSION</span><b id="elapsed">00:00</b></div></section>
+  <div id="notice" class="notice" role="status">Choose a mode and start a session. Simulation uses scripted signals; live mode requires a webcam and downloaded models.</div>
+  <section class="stats"><article><span>FACE PRESENCE</span><strong id="faces">—</strong><small id="face-caption">Waiting for session</small></article><article><span>GAZE / HEAD PROXY</span><strong id="gaze">—</strong><small id="calibration">Calibration required in live mode</small></article><article><span>PHONE SIGNAL</span><strong id="phone">—</strong><small>YOLOv8n · COCO cell phone</small></article><article><span>REVIEW EVENTS</span><strong id="event-count">0</strong><small>Signals require human review</small></article></section>
+  <div class="workspace-grid">
+    <section class="panel camera-panel"><div class="panel-heading"><h2>Camera observation</h2><span id="mode-badge" class="pill">STANDBY</span></div><div class="camera-stage"><img id="camera" alt="Local annotated webcam feed" hidden><div id="camera-placeholder"><div class="face-outline"><span>+</span></div><h3 id="placeholder-title">Ready when you are</h3><p id="placeholder-text">Live frames stay in memory on this device.</p></div><div class="camera-overlay"><span id="signal-dot" class="signal-dot"></span><span id="camera-status">CAMERA OFF</span><span id="latency">— ms inference</span></div><div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div></div><div class="camera-footer"><span>○ No frame recording</span><span>⌁ Calibrated gaze proxy</span><span>□ 640 × 480 target</span></div></section>
+    <section class="panel controls-panel"><div class="panel-heading"><h2>Session controls</h2><span class="step-number">01</span></div>
+      <label class="field-label" for="mode">MONITORING MODE</label><select id="mode"><option value="simulation">Simulation · scripted rehearsal</option><option value="live">Live · webcam + local models</option></select>
+      <div id="model-state" class="model-state">Checking models…</div>
+      <label class="field-label" for="camera-index">CAMERA INDEX</label><select id="camera-index"><option value="0">0 · Default camera</option><option value="1">1 · Second camera</option><option value="2">2 · Third camera</option></select>
+      <label class="check-row"><input type="checkbox" id="consent"><span>I consent to local monitoring and event metadata logging for this session.</span></label>
+      <label class="check-row"><input type="checkbox" id="native-guard"><span>Enable Windows key protection during the session.<small>Alt+Tab, Win, PrtScn, Ctrl+C/V. Recovery: Ctrl+Shift+Q.</small></span></label>
+      <div class="control-actions"><button id="start" class="primary">Start session <span>↗</span></button><button id="stop" class="danger" disabled>End &amp; release protection</button></div>
+      <div class="secondary-actions"><button id="calibrate" disabled>Recalibrate gaze</button><button id="export" disabled>Export report ↓</button></div>
+      <div class="protection-note"><span id="protection-dot">○</span><div><b id="protection-title">Protection inactive</b><p id="protection-detail">Desktop mode restricts navigation and opens no extra tabs. OS lockdown requires managed devices.</p></div></div>
+    </section>
+    <section class="panel exam-panel"><div class="panel-heading"><h2>Demo assessment</h2><span class="pill muted">SAMPLE · 1 QUESTION</span></div><div class="question"><span>QUESTION 01</span><h3>Which action best protects student privacy in a local proctoring system?</h3><label><input type="radio" name="answer" value="local"> Process video on the device and store only necessary review metadata.</label><label><input type="radio" name="answer" value="upload"> Upload every frame to a shared public folder.</label><label><input type="radio" name="answer" value="verdict"> Automatically label every gaze shift as cheating.</label></div><div class="exam-footer">Answers are for this demo only.<span id="answer-state">No answer selected</span></div></section>
+    <section class="panel event-panel"><div class="panel-heading"><h2>Review timeline</h2><span class="pill muted">HUMAN REVIEW</span></div><div id="events" class="events"><div class="empty-state"><span>◎</span><h3>No signals to review</h3><p>Events appear only after a sustained signal crosses its threshold.</p></div></div></section>
+  </div>
+  <footer>Prototype v0.1 <span>Phone position does not prove photography. Gaze is an estimate. No automatic sanctions.</span><b>Built for Case 03</b></footer>
+</main><script src="/assets/app.js"></script>
+</body></html>

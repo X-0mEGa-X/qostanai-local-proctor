@@ -1,0 +1,17 @@
+.venv/
+node_modules/
+models/*
+!models/.gitkeep
+data/*
+!data/.gitkeep
+.local/
+tmp/
+__pycache__/
+*.pyc
+.env*
+*.log
+dist/
+output/qa/
+tests/results/*.json
+tests/results/*.csv
+

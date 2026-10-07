@@ -1,0 +1,12 @@
+{
+  "name": "qostanai-local-proctor",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local proctoring desktop prototype for Case 3",
+  "main": "desktop/main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test tests/desktop.test.cjs"
+  },
+  "devDependencies": {"electron": "^41.0.0"}
+}

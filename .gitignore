@@ -12,6 +12,6 @@ __pycache__/
 *.log
 dist/
 output/qa/
+output/*.zip
 tests/results/*.json
 tests/results/*.csv
-

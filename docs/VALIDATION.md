@@ -11,6 +11,7 @@ Checks executed on the captain's Windows laptop on 7 October 2026. These results
 | Visual UI inspection | Top and bottom screenshots inspected | Dashboard, controls and review timeline render without observed overlap |
 | Vision execution on a blank generated frame | Both models loaded and executed; 0 faces / 0 phones | YOLO and MediaPipe are executable on this machine; not sensitivity/accuracy |
 | Windows hook lifecycle | Registered successfully; stopped; thread exited | Hook can install and release; no physical shortcut interception claim |
+| Independent heartbeat watchdog | Expired session ended and protection released; stopped timer stayed stable | Recovery works independently of the vision worker; no participant camera needed |
 | Dependency consistency | `pip check` passed; npm audit reported 0 vulnerabilities in 14 packages | Installed Python dependencies satisfy declared constraints; npm audit applies to that dependency graph only |
 
 The project uses a Cyrillic Windows folder. MediaPipe's native model-path loader failed on that path; loading the model bytes into `BaseOptions` resolved the model execution check.

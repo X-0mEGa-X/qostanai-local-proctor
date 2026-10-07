@@ -1,5 +1,6 @@
 const $ = id => document.getElementById(id);
 let active = false, mode = 'simulation', busy = false, pollBusy = false, frameUrl, lastEventKey = '';
+let cancelStart = false;
 const isDesktop = Boolean(window.desktop);
 $('runtime').textContent = isDesktop ? 'LOCAL DESKTOP' : 'BROWSER PREVIEW · LIMITED PROTECTION';
 function notice(message, error=false) { $('notice').textContent = message; $('notice').classList.toggle('error', error); }
@@ -13,6 +14,12 @@ async function api(path, body) {
 function timeLabel(seconds) { return `${String(Math.floor(seconds/60)).padStart(2,'0')}:${String(Math.floor(seconds%60)).padStart(2,'0')}`; }
 async function signal(code) { if (active) { try { await api('security',{code}); } catch {} } }
 async function release() { if (isDesktop) await window.desktop.setProtected(false); }
+async function emergencyEnd() {
+  cancelStart = true;
+  await release();
+  try { await api('stop',{}); active=false; notice('Emergency exit: session ended and protection released.'); }
+  catch(error) { notice('Emergency exit requested. '+error.message,true); }
+}
 async function endSession() {
   if (busy) return;
   busy=true;
@@ -28,11 +35,13 @@ async function endSession() {
 $('start').addEventListener('click', async () => {
   if (busy) return;
   busy=true;
+  cancelStart=false;
   $('start').disabled=true;
   try {
     mode=$('mode').value;
     if (!$('consent').checked) throw new Error('Please confirm local monitoring consent before starting.');
     await api('start',{mode,consent:true,native_guard:$('native-guard').checked,camera_index:Number($('camera-index').value)});
+    if(cancelStart){await api('stop',{});throw new Error('Start canceled by emergency exit. Protection released.');}
     active=true;
     if (isDesktop) await window.desktop.setProtected(true);
     notice(mode==='simulation' ? 'SIMULATION: all vision signals are scripted for rehearsal. This is not a live detection demonstration.' : 'Live monitoring started. Look straight at the screen for 20 valid frames to calibrate gaze and head pose.');
@@ -59,7 +68,7 @@ document.addEventListener('contextmenu',event=>{if(active) event.preventDefault(
 document.addEventListener('visibilitychange',()=>{if(document.hidden)signal('tab_hidden');});
 window.addEventListener('blur',()=>signal('focus_lost'));
 document.addEventListener('keydown',event=>{
-  if(event.ctrlKey&&event.shiftKey&&event.key.toLowerCase()==='q'){event.preventDefault();signal('emergency_exit');endSession();return;}
+  if(event.ctrlKey&&event.shiftKey&&event.key.toLowerCase()==='q'){event.preventDefault();signal('emergency_exit');emergencyEnd();return;}
   if(!active)return;
   if(((event.ctrlKey||event.metaKey)&&['c','v','x','t','n','l','r','w'].includes(event.key.toLowerCase()))||['PrintScreen','F12','F11'].includes(event.key)){
     event.preventDefault();signal('shortcut_blocked');
@@ -68,7 +77,7 @@ document.addEventListener('keydown',event=>{
 if(isDesktop){window.desktop.onSecurityEvent(code=>{
   if(code==='backend_stopped'){active=false;release();notice('Backend stopped. Protection released. Restart the application.',true);return;}
   signal(code);
-}); window.desktop.onEmergency(endSession);}
+}); window.desktop.onEmergency(emergencyEnd);}
 function renderEvents(events){
   const key=events.map(e=>e.id).join(','); if(key===lastEventKey)return; lastEventKey=key;
   if(!events.length){$('events').replaceChildren(); const div=document.createElement('div');div.className='empty-state';div.textContent='No signals to review. Sustained events will appear here.';$('events').append(div);return;}

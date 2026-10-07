@@ -81,11 +81,19 @@ app.whenReady().then(async () => {
         const status=await fetch('/api/status').then(r=>r.json());
         document.dispatchEvent(new KeyboardEvent('keydown',{key:'q',ctrlKey:true,shiftKey:true,bubbles:true}));
         await new Promise(r=>setTimeout(r,1200));
+        document.getElementById('start').click();
+        await new Promise(r=>setTimeout(r,1000));
+        const restarted=await fetch('/api/status').then(r=>r.json());
+        document.dispatchEvent(new KeyboardEvent('keydown',{key:'q',ctrlKey:true,shiftKey:true,bubbles:true}));
+        await new Promise(r=>setTimeout(r,1200));
+        document.getElementById('start').click();
+        document.dispatchEvent(new KeyboardEvent('keydown',{key:'q',ctrlKey:true,shiftKey:true,bubbles:true}));
+        await new Promise(r=>setTimeout(r,1200));
         const report=await fetch('/api/report').then(r=>r.json());
         return {active:status.active, mode:status.mode, codes:status.events.map(e=>e.code), reportSession:report.session_id,
           title:document.title, desktopBridge:Boolean(window.desktop), runtime:document.getElementById('runtime').textContent,
           modelState:document.getElementById('model-state').textContent, eventCount:document.getElementById('event-count').textContent,
-          ended:!report.active, stopDisabled:document.getElementById('stop').disabled};
+          ended:!report.active, restartWorks:restarted.active, stopDisabled:document.getElementById('stop').disabled};
       })()`);
       fs.mkdirSync(path.join(ROOT, 'output/qa'), {recursive:true});
       fs.writeFileSync(path.join(ROOT, 'output/qa/electron-smoke.json'), JSON.stringify(result, null, 2));
@@ -94,7 +102,7 @@ app.whenReady().then(async () => {
       await new Promise(resolve=>setTimeout(resolve,200));
       fs.writeFileSync(path.join(ROOT, 'output/qa/desktop-bottom.png'), (await window.webContents.capturePage()).toPNG());
       console.log(JSON.stringify(result));
-      if (result.runtime !== 'LOCAL DESKTOP' || result.modelState.includes('Checking') || !result.ended || !result.stopDisabled || !result.codes.includes('phone_visible')) throw new Error('Desktop UI smoke check failed');
+      if (result.runtime !== 'LOCAL DESKTOP' || result.modelState.includes('Checking') || !result.ended || !result.restartWorks || !result.stopDisabled || !result.codes.includes('phone_visible')) throw new Error('Desktop UI smoke check failed');
       app.quit();
     }
   } catch (error) {

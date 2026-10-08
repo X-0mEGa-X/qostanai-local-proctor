@@ -1,6 +1,6 @@
 # Member 1 captain prompts
 
-You and Codex own engineering, integration and the complete presentation package. Use [the captain presentation guide](CAPTAIN_PITCH.md) for the PDF, script, pilot proposal and jury answers. Member 2 supplies QA and demo evidence. Member 3 has no laptop-dependent deliverables. Continue in this Codex chat with the local project open. Most code and starting documents have already been written; ask for the next bounded result instead of rebuilding from scratch. Use your Pro account for debugging, integration and careful reviews. Check available allowance in your own account rather than assuming unlimited use.
+You and Codex own engineering, integration and submission packaging. Member 3 owns the pitch and presentation; use [the captain presentation guide](CAPTAIN_PITCH.md) to support that work. Member 2 supplies QA and demo evidence. Continue in this Codex chat with the local project open. Most code and starting documents have already been written; ask for the next bounded result instead of rebuilding from scratch. Use your Pro account for debugging, integration and careful reviews. Check available allowance in your own account rather than assuming unlimited use.
 
 ## Step 1 inspect current state
 

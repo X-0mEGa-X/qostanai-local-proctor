@@ -54,7 +54,7 @@ try:
         status = json.load(request('/api/status'))
     codes = {event['code'] for event in status['events']}
     assert {'phone_visible', 'phone_raised', 'clipboard_blocked'} <= codes, codes
-    assert all(event['source'] == 'simulation' for event in status['events'])
+    assert all(event['source'] == ('environment' if event['code'] == 'clipboard_blocked' else 'simulation') for event in status['events'])
     report = json.load(request('/api/stop', {}))
     assert report['active'] is False
     assert report['session_id'] == result['session_id']
@@ -62,6 +62,8 @@ try:
     assert saved['active'] is False and saved['ended_at']
     assert json.load(request('/api/report'))['session_id'] == result['session_id']
     assert request('/api/frame').status == 204
+    fails('/api/calibrate', {}, 409)
+    assert report['storage_error'] is None and report['elapsed_s'] >= 10
     print(json.dumps({'api_check': 'passed', 'signal_codes': sorted(codes), 'auth_origin_consent_conflict_checks': 'passed', 'saved_report': 'passed'}))
 finally:
     process.terminate()

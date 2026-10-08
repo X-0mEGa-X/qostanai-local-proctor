@@ -1,5 +1,40 @@
 # Prototype validation status
 
+## Audit on 8 October 2026
+
+The working tree was clean before this audit. Existing teammates' changes were not overwritten. The following checks ran locally after the fixes; participant webcam accuracy and physical keyboard interception remain unmeasured.
+
+| Check | Result | Scope |
+| --- | --- | --- |
+| Python suite | 16 passed | Temporal rules, clean model inputs, calibration reset and synthetic iris directions, fake camera failure/cancellation, storage failure, watchdog and fake Windows hook cancellation |
+| Node policy suite | 2 passed | Selected shortcut policy, emergency exemption and navigation boundary |
+| API integration | Passed | Auth/origin/consent checks, invalid/duplicate start rejection, simulated phone events, environment source labels, ended local JSON and export, inactive calibration rejection |
+| Electron integration | Passed | UI start, emergency cancel/restart, actual Export-button JSON download, failed page Stop-request recovery, renderer crash with main-process session release |
+| Actual models on a generated 640×480 blank frame | Passed; 0 faces and 0 phones | Both downloaded models execute on this Windows laptop; this is not a participant accuracy trial |
+| Dependency consistency | `pip check` passed | Installed Python dependencies satisfy their requirements |
+| Visual inspection | Top and bottom screenshots inspected | Controls, timeline, source labels and report button render without observed overlap |
+
+Before fixes, the new failure-path tests produced four failures and two errors. Confirmed defects included phone overlays entering face inference, stale calibration progress after face loss, camera opening after a canceled model load, cleanup exceptions leaving sessions active, and unhandled report write failures. The fixed suite passes. Additional recovery checks cover a canceled hook installation and a crashed renderer. The renderer crash test deliberately triggers a Chromium crash diagnostic; its final recovery assertions passed.
+
+Reproduce with:
+
+```powershell
+.\.venv\Scripts\python.exe -m unittest discover -s tests -v
+node --test tests/desktop.test.cjs
+.\.venv\Scripts\python.exe scripts/check_api.py
+.\.venv\Scripts\python.exe scripts/check_vision.py
+node node_modules/electron/cli.js . --smoke-test
+.\.venv\Scripts\python.exe -m pip check
+```
+
+API and desktop checks use simulation and leave private test reports under ignored `data/` and `output/qa/`. Unit tests substitute fake camera/model/hook outputs. The vision execution check loads real models but never opens a webcam. No human scenario counts, real-world accuracy, measured webcam FPS, cost savings or completed university pilot are supported by this audit.
+
+The dashboard's live processing value covers a frame iteration, including capture, model processing and JPEG encoding; it is not an FPS benchmark. Simulation now displays “Scripted · no inference” rather than an inference-time claim. Security events use source `environment`; scripted vision uses `simulation`; webcam vision uses `live`.
+
+Current demo blockers and the short human test list are in [DEMO_AUDIT.md](DEMO_AUDIT.md). The six-slide presentation outline is in [PITCH.md](PITCH.md).
+
+## Earlier checks on 7 October 2026
+
 Checks executed on the captain's Windows laptop on 7 October 2026. These results establish software behavior and model execution. Real participant webcam accuracy has not been validated.
 
 | Check | Observed result | What it establishes |

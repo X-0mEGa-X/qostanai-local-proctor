@@ -1,6 +1,6 @@
 # Captain presentation and jury prompts
 
-The captain and Codex own the six-slide PDF, three-minute pitch, pilot proposal and jury answers. Continue in the existing captain chat. Member 2 supplies actual test results and demo evidence. Own `docs/PITCH.md`, `docs/PILOT_PLAN.md`, `docs/JURY_QA.md` and `submission/presentation.pdf`. Member 3 has no laptop-dependent deliverables.
+This is the captain's backup drafting guide. Member 3 owns the pitch and presentation; the captain and Codex supply technical support and help create the files. Member 2 supplies actual test results and demo evidence. Use `docs/PITCH.md` as the current six-slide outline. Proposed future artifacts include `docs/PILOT_PLAN.md`, `docs/JURY_QA.md` and `submission/presentation.pdf`; their mention here does not mean they have been created.
 
 ## Step 1 build the judging outline
 
@@ -16,7 +16,7 @@ Create docs/PILOT_PLAN.md for a proposed small supervised KRU trial of our local
 
 ## Step 3 make the PDF and timed script
 
-Use the actual validation summary and Member 2's consented screenshots or video. Codex prepares the editable deck and PDF, and the captain checks the team identity, evidence and final claims. Inspect every slide before submission.
+Use the actual validation summary and Member 2's consented screenshots or video. Codex can prepare the editable deck and PDF; Member 3 checks team identity and delivery, and the captain checks technical claims. Inspect every slide before submission.
 
 ```text
 Create final slide text and speaker notes for our six-slide Case 3 presentation. Team name/members: [ACTUAL DETAILS]. Actual validation: [PASTE RESULTS]. Demonstration: [PASTE RUNBOOK AND LIVE/RECORDED/SIMULATED LABELS]. Use the approved outline, readable text and actual product screenshots where appropriate. Clearly label unvalidated features and deployment gaps. Put AI/pretrained component disclosure and limitations on the last slide. Write a timed script totaling at most three minutes: captain introduces/technical explanation, Member 2 runs about 65 seconds of demonstration, the captain explains pilot value and limits. Return final slide text and notes; if you can generate a deck, export a presentation PDF to submission/presentation.pdf. Do not invent missing evidence.
@@ -30,4 +30,4 @@ Review this final pitch/PDF text against the case, architecture and measured QA:
 
 ## Integration
 
-The captain keeps the presentation files with the source repository and checks them against the final tested commit. No handoff from Member 3 is required. Keep missing team details or test evidence explicit until they are supplied.
+Member 3 hands the presentation to the captain for packaging with the final tested source. Keep missing team details or test evidence explicit until they are supplied. When using the older drafting prompts above, assign narration to Member 3 and demonstration to Member 2, following the current outline.

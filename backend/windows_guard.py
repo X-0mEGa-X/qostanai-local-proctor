@@ -14,6 +14,8 @@ class WindowsGuard:
         self.error = None
         self.last_event = 0
         self.ready = threading.Event()
+        self.cancelled = threading.Event()
+        self.state_lock = threading.Lock()
 
     def start(self):
         if os.name != 'nt':
@@ -21,10 +23,21 @@ class WindowsGuard:
             return False
         self.thread = threading.Thread(target=self._run, daemon=True)
         self.thread.start()
-        self.ready.wait(3)
+        if not self.ready.wait(3):
+            self.error = 'Keyboard hook startup timed out'
+            self.stop()
         return self.enabled
 
     def _run(self):
+        try:
+            self._install_and_pump()
+        except Exception as error:
+            self.error = f'Keyboard hook unavailable: {error}'
+        finally:
+            self.enabled = False
+            self.ready.set()
+
+    def _install_and_pump(self):
         user32 = ctypes.WinDLL('user32', use_last_error=True)
         kernel32 = ctypes.WinDLL('kernel32', use_last_error=True)
         LRESULT = ctypes.c_ssize_t
@@ -56,15 +69,22 @@ class WindowsGuard:
             return user32.CallNextHookEx(None, code, wp, lp)
         self.callback = callback
         self.thread_id = kernel32.GetCurrentThreadId()
+        # Create the message queue before stop() can post WM_QUIT.
+        message = wintypes.MSG()
+        user32.PeekMessageW(ctypes.byref(message), None, 0, 0, 0)
+        if self.cancelled.is_set():
+            return
         hook = user32.SetWindowsHookExW(13, callback, kernel32.GetModuleHandleW(None), 0)
         if not hook:
             self.error = f'Keyboard hook failed: {ctypes.get_last_error()}'
             self.ready.set()
             return
-        self.enabled = True
-        self.ready.set()
         try:
-            message = wintypes.MSG()
+            with self.state_lock:
+                if self.cancelled.is_set():
+                    return
+                self.enabled = True
+                self.ready.set()
             while user32.GetMessageW(ctypes.byref(message), None, 0, 0) > 0:
                 user32.TranslateMessage(ctypes.byref(message))
                 user32.DispatchMessageW(ctypes.byref(message))
@@ -73,7 +93,9 @@ class WindowsGuard:
             user32.UnhookWindowsHookEx(hook)
 
     def stop(self):
-        self.enabled = False
+        with self.state_lock:
+            self.cancelled.set()
+            self.enabled = False
         if self.thread_id and os.name == 'nt':
             ctypes.windll.user32.PostThreadMessageW(self.thread_id, 0x12, 0, 0)
         if self.thread and self.thread is not threading.current_thread():

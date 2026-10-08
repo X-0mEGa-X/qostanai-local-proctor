@@ -47,6 +47,7 @@ class Monitor:
         self.elapsed_at_end = None
         self.worker = None
         self.error = None
+        self.storage_error = None
         self.latency_ms = 0
         self.vision = None
         self.stop_flag = threading.Event()
@@ -60,35 +61,50 @@ class Monitor:
             if not self.active:
                 return
             event = dict(event, id=len(self.events)+1, timestamp=datetime.now(timezone.utc).isoformat(),
-                         elapsed_s=round(time.monotonic()-self.started, 1), source=self.mode)
+                         elapsed_s=round(time.monotonic()-self.started, 1), source=event.get('source', self.mode))
             self.events.append(event)
             self.persist()
 
-    def security(self, code):
+    def security(self, code, expected_session=None):
         with self.lock:
+            if expected_session is not None and expected_session != self.session_id:
+                return
             now = time.monotonic()
             if now - self.security_last.get(code, 0) < 1:
                 return
             self.security_last[code] = now
-            self.record({'code': code, 'severity': 'medium', 'title': code.replace('_', ' ').capitalize()})
+            self.record({'code': code, 'severity': 'medium', 'source': 'environment',
+                         'title': code.replace('_', ' ').capitalize()})
 
     def report(self):
         with self.lock:
             return {'session_id': self.session_id, 'mode': self.mode, 'active': self.active,
                     'started_at': self.started_at if self.session_id else None, 'ended_at': self.ended_at,
+                    'elapsed_s': round(time.monotonic()-self.started) if self.active else self.elapsed_at_end or 0,
+                    'error': self.error, 'storage_error': self.storage_error,
                     'events': list(self.events), 'policy': 'Human review required; no automatic cheating verdict.',
                     'privacy': 'No video or images saved. Event metadata stays on this computer.',
                     'limits': ['Coarse calibrated gaze/head proxy', 'Phone raised is a position heuristic, not proof of photography',
                                'Window protection is a prototype, not a managed OS lockdown']}
 
     def persist(self):
-        if self.session_id:
+        if not self.session_id:
+            return True
+        try:
             folder = ROOT / 'data'
             folder.mkdir(exist_ok=True)
             path = folder / f'{self.session_id}.json'
             tmp = path.with_suffix('.tmp')
-            tmp.write_text(json.dumps(self.report(), ensure_ascii=False, indent=2), encoding='utf-8')
+            snapshot = self.report()
+            snapshot['storage_error'] = None
+            tmp.write_text(json.dumps(snapshot, ensure_ascii=False, indent=2), encoding='utf-8')
             tmp.replace(path)
+            self.storage_error = None
+            return True
+        except OSError as error:
+            # Keep the in-memory report exportable; storage must not prevent release.
+            self.storage_error = f'Local report could not be saved: {error}'
+            return False
 
     def start(self, options):
         with self.lock:
@@ -107,47 +123,59 @@ class Monitor:
             self.security_last = {}
             self.calibration_requested = False
             self.rules = TemporalRules()
-            self.error, self.jpeg = None, None
+            self.error, self.storage_error, self.jpeg = None, None, None
+            self.latency_ms = 0
             self.started = time.monotonic()
             self.started_at = datetime.now(timezone.utc).isoformat()
             self.ended_at = None
             self.elapsed_at_end = None
             self.last_heartbeat = time.monotonic()
             self.stop_flag = threading.Event()
-            self.guard = WindowsGuard(self.security)
+            self.guard = WindowsGuard(lambda code, session_id=self.session_id: self.security(code, session_id))
+            # Verify report storage before activating any protection or camera.
+            if not self.persist():
+                self.active = False
+                self.stop_flag.set()
+                self.ended_at = datetime.now(timezone.utc).isoformat()
+                self.elapsed_at_end = 0
+                raise HTTPException(503, self.storage_error)
             if options.native_guard:
                 self.guard.start()
                 if not self.guard.enabled:
                     self.security('native_guard_unavailable')
             self.worker = threading.Thread(target=self.run, args=(options.camera_index,), daemon=True)
             self.worker.start()
-            threading.Thread(target=self.watchdog, daemon=True).start()
-            self.persist()
+            threading.Thread(target=self.watchdog, args=(self.session_id, self.stop_flag), daemon=True).start()
 
-    def stop(self):
+    def stop(self, expected_session=None):
         with self.lock:
+            if expected_session is not None and expected_session != self.session_id:
+                return
+            session_id, guard, worker = self.session_id, self.guard, self.worker
             self.active = False
             self.stop_flag.set()
+            self.jpeg = None
             self.ended_at = self.ended_at or datetime.now(timezone.utc).isoformat()
             if self.elapsed_at_end is None:
                 self.elapsed_at_end = round(time.monotonic()-self.started) if self.session_id else 0
-        self.guard.stop()
-        if self.worker and self.worker is not threading.current_thread():
-            self.worker.join(3)
+        guard.stop()
+        if worker and worker is not threading.current_thread():
+            worker.join(3)
         with self.lock:
-            self.jpeg = None
-            self.persist()
+            if session_id == self.session_id:
+                self.persist()
 
-    def watchdog(self):
+    def watchdog(self, session_id, flag):
         # Independent from vision so a stalled detector cannot keep keys blocked.
-        flag = self.stop_flag
         while not flag.wait(.5):
             with self.lock:
+                if session_id != self.session_id:
+                    return
                 now = time.monotonic()
                 expired = self.active and (now-self.last_heartbeat > 20 or now-self.started > 3600)
             if expired:
-                self.security('session_watchdog_released')
-                self.stop()
+                self.security('session_watchdog_released', expected_session=session_id)
+                self.stop(expected_session=session_id)
                 return
 
     def simulation(self, elapsed):
@@ -169,17 +197,21 @@ class Monitor:
     def run(self, camera_index):
         cap = None
         vision = None
+        session_id, flag = self.session_id, self.stop_flag
         try:
             if self.mode == 'live':
                 import cv2
                 vision = Vision()
-                self.vision = vision
+                with self.lock:
+                    if flag.is_set():
+                        return
+                    self.vision = vision
                 cap = cv2.VideoCapture(camera_index, cv2.CAP_DSHOW if os.name == 'nt' else cv2.CAP_ANY)
                 if not cap.isOpened():
                     raise RuntimeError('Camera unavailable. Close other camera apps or try another index.')
                 cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
                 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
-            while not self.stop_flag.is_set():
+            while not flag.is_set():
                 now = time.monotonic()
                 t0 = time.perf_counter()
                 jpeg = None
@@ -198,22 +230,30 @@ class Monitor:
                     if ok:
                         jpeg = encoded.tobytes()
                 with self.lock:
+                    if flag.is_set():
+                        break
                     self.latency_ms = round((time.perf_counter()-t0)*1000)
                     self.observation, self.jpeg = obs, jpeg
                     for event in self.rules.update(obs, time.monotonic()):
                         self.record(event)
-                self.stop_flag.wait(.15 if self.mode == 'live' else .25)
+                flag.wait(.15 if self.mode == 'live' else .25)
         except Exception as error:
             with self.lock:
                 self.error = str(error)
                 self.record({'code': 'monitor_error', 'severity': 'high', 'title': self.error})
         finally:
-            if cap:
-                cap.release()
-            if vision:
-                vision.close()
-            self.vision = None
-            self.stop()
+            # Release protection before potentially slow/failing driver cleanup.
+            self.stop(expected_session=session_id)
+            for resource, close_method in ((cap, 'release'), (vision, 'close')):
+                if resource is not None:
+                    try:
+                        getattr(resource, close_method)()
+                    except Exception as error:
+                        with self.lock:
+                            self.error = f'{self.error + "; " if self.error else ""}Cleanup failed: {error}'
+            with self.lock:
+                self.vision = None
+                self.persist()
 
 monitor = Monitor()
 atexit.register(monitor.stop)
@@ -232,7 +272,7 @@ async def boundary(request: Request, call_next):
     if request.url.path.startswith('/api/'):
         if request.cookies.get('proctor_session') != TOKEN:
             return JSONResponse({'detail': 'Open the application first'}, status_code=401)
-        if request.method != 'GET' and request.headers.get('origin') != ORIGIN:
+        if request.method != 'GET' and request.headers.get('origin') != f'http://{request.headers.get("host")}':
             return JSONResponse({'detail': 'Invalid origin'}, status_code=403)
     response = await call_next(request)
     response.headers['X-Content-Type-Options'] = 'nosniff'
@@ -258,7 +298,9 @@ def status():
                 'observation': monitor.observation, 'events': list(monitor.events), 'error': monitor.error,
                 'elapsed_s': (round(time.monotonic()-monitor.started) if monitor.active else monitor.elapsed_at_end or 0),
                 'latency_ms': monitor.latency_ms, 'models': model_status(),
-                'native_guard': monitor.guard.enabled, 'guard_error': monitor.guard.error}
+                'native_guard': monitor.guard.enabled, 'guard_error': monitor.guard.error,
+                'storage_error': monitor.storage_error, 'vision_ready': monitor.active and monitor.vision is not None,
+                'stopping': not monitor.active and bool(monitor.worker and monitor.worker.is_alive())}
 
 @app.post('/api/start')
 def start(options: StartInput):
@@ -273,7 +315,7 @@ def stop():
 @app.post('/api/calibrate')
 def calibrate():
     with monitor.lock:
-        if not monitor.vision:
+        if not monitor.active or not monitor.vision:
             raise HTTPException(409, 'Live vision is not ready')
         monitor.calibration_requested = True
     return {'ok': True}
@@ -288,7 +330,7 @@ def security(event: SecurityInput):
 @app.get('/api/frame')
 def frame():
     with monitor.lock:
-        if not monitor.jpeg:
+        if not monitor.active or not monitor.jpeg:
             return Response(status_code=204)
         return Response(monitor.jpeg, media_type='image/jpeg')
 

@@ -42,6 +42,7 @@ class Vision:
     def analyze(self, frame):
         cv2, mp, np = self.cv2, self.mp, self.np
         h, w = frame.shape[:2]
+        annotated = frame.copy()
         result = self.yolo.predict(frame, imgsz=640, conf=0.35, classes=[67], device='cpu', verbose=False)[0]
         phones = []
         for box in result.boxes:
@@ -50,8 +51,8 @@ class Vision:
             raised = (y1 + y2) / (2 * h) < 0.65 and (x2 - x1) * (y2 - y1) / (w * h) > 0.008
             phones.append({'bbox': [round(x1/w, 3), round(y1/h, 3), round(x2/w, 3), round(y2/h, 3)],
                            'confidence': round(float(box.conf[0]), 3), 'raised': raised})
-            cv2.rectangle(frame, (int(x1), int(y1)), (int(x2), int(y2)), (74, 171, 255), 2)
-            cv2.putText(frame, 'PHONE', (int(x1), max(20, int(y1)-8)), cv2.FONT_HERSHEY_SIMPLEX, .6, (74, 171, 255), 2)
+            cv2.rectangle(annotated, (int(x1), int(y1)), (int(x2), int(y2)), (74, 171, 255), 2)
+            cv2.putText(annotated, 'PHONE', (int(x1), max(20, int(y1)-8)), cv2.FONT_HERSHEY_SIMPLEX, .6, (74, 171, 255), 2)
         rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         timestamp = max(self.last_ms + 1, int(time.monotonic() * 1000))
         self.last_ms = timestamp
@@ -61,11 +62,12 @@ class Vision:
         for points in faces.face_landmarks:
             for index in (1, 33, 133, 362, 263, 468, 473):
                 point = points[index]
-                cv2.circle(frame, (int(point.x * w), int(point.y * h)), 2, (180, 226, 62), -1)
+                cv2.circle(annotated, (int(point.x * w), int(point.y * h)), 2, (180, 226, 62), -1)
         if len(faces.face_landmarks) != 1:
             if self.baseline is None:
                 self.samples.clear()
-            return observation, frame
+                observation['calibration_samples'] = 0
+            return observation, annotated
         points = faces.face_landmarks[0]
         rotation = np.asarray(faces.facial_transformation_matrixes[0])[:3, :3]
         yaw = math.degrees(math.atan2(float(rotation[0, 2]), float(rotation[2, 2])))
@@ -80,7 +82,7 @@ class Vision:
             observation['calibration_samples'] = len(self.samples)
             observation['calibrated'] = self.baseline is not None
             observation['gaze'] = 'calibrating'
-            return observation, frame
+            return observation, annotated
         dyaw, dpitch, dex, dey = np.asarray(sample) - self.baseline
         # Coarse proxy combining head rotation and iris location, not eye-tracker accuracy.
         gaze = 'center'
@@ -89,7 +91,7 @@ class Vision:
         elif abs(dyaw) > 20 or abs(dex) > .18:
             gaze = 'left' if dyaw < -20 or dex < -.18 else 'right'
         observation.update(gaze=gaze, yaw_deg=round(float(dyaw), 1), pitch_deg=round(float(dpitch), 1))
-        return observation, frame
+        return observation, annotated
 
     def close(self):
         self.face.close()

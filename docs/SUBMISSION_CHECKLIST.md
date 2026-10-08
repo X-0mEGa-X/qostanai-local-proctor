@@ -1,6 +1,6 @@
 # Hackathon submission checklist
 
-The captain and Codex own the presentation PDF, pitch, jury answers and packaging. Member 2 supplies test and demonstration evidence. No required artifact depends on Member 3.
+Member 3 owns the presentation and pitch with Codex support. The captain owns final packaging and submission. Member 2 supplies test and demonstration evidence. The current text outline does not replace the required presentation PDF.
 
 Use the conservative deadline: 8 October 2026, 23:59, as repeated in rules sections 1.6 and 5.3. Confirm the timezone and registration date conflict with the organizer; schedule an internal upload several hours earlier. Demo Day is 16 October in Kostanay.
 

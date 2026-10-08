@@ -6,9 +6,9 @@ Case 3 prototype for KRU and Qostanai Hub, Qostanai Industry Hackathon 2026. Loc
 
 | Member | Responsibility | Prompt guide |
 | --- | --- | --- |
-| Captain + Codex / Pro account | Engineering, integration, presentation PDF, pitch, jury answers and submission | [Development](docs/prompts/MEMBER_1_PRO.md) and [presentation](docs/prompts/CAPTAIN_PITCH.md) |
+| Captain + Codex / Pro account | Engineering, integration, technical support and submission | [Development](docs/prompts/MEMBER_1_PRO.md) |
 | Member 2 / Plus | Product testing, live test matrix, demo recording | [Member 2](docs/prompts/MEMBER_2_PLUS.md) |
-| Member 3 | Optional rehearsal and test participation; no laptop-dependent deliverables | [Support role](docs/prompts/MEMBER_3_PLUS.md) |
+| Member 3 | Pitch and presentation, supported by Codex drafts | [Presentation guide](docs/prompts/MEMBER_3_PLUS.md) and [six-slide outline](docs/PITCH.md) |
 
 ## Run on Windows
 
@@ -59,6 +59,8 @@ npm test
 ```
 
 `check_vision.py` uses a generated blank frame to check that both models load and execute. It does not validate real-world accuracy. [Manual tests](docs/QA_CHECKLIST.md) must be completed on a real webcam before calling the live demo validated.
+
+See the [8 October readiness audit](docs/DEMO_AUDIT.md) for fixed defects, current limitations and five human checks. The [validation record](docs/VALIDATION.md) documents 16 passing Python tests, 2 passing Node checks, API integration, actual desktop report download and renderer-crash recovery.
 
 ## Project map
 

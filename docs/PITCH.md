@@ -1,6 +1,6 @@
 # Three minute pitch and PDF outline
 
-Member 3 owns the final six-slide PDF. Replace team identity and add actual test findings before submission. Keep unsupported numbers out. Present live behavior and limits accurately.
+The captain and Codex own the final six-slide PDF, script, pilot proposal and jury answers. The captain presents the spoken sections and Member 2 runs the demonstration. Member 3 can join rehearsal without owning a required deliverable. Replace team identity and add actual test findings before submission. Keep unsupported numbers out. Present live behavior and limits accurately.
 
 ## Six slides
 
@@ -15,13 +15,13 @@ Member 3 owns the final six-slide PDF. Replace team identity and add actual test
 
 **0:00-0:20, captain:** “We chose Case 3: a local proctoring system for KRU and Qostanai Hub. The task combines phone detection, face and gaze monitoring, and control of the exam environment.”
 
-**0:20-0:45, Member 3:** “Our prototype keeps camera processing on the laptop. YOLOv8n finds phones; MediaPipe provides face meshes and calibrated head and iris features. A short glance is not automatically a violation. Sustained signals create entries for a human reviewer.”
+**0:20-0:45, captain:** “Our prototype keeps camera processing on the laptop. YOLOv8n finds phones; MediaPipe provides face meshes and calibrated head and iris features. A short glance is not automatically a violation. Sustained signals create entries for a human reviewer.”
 
 **0:45-1:50, Member 2:** Run the prepared live sequence: start/consent and calibration; phone for 3 s; down look for 5 s; a second consenting person enters; attempt clipboard or Alt+Tab with the tested guard; end session and export a report. Use a pre-calibrated consented live session if initial startup exceeds the slot. If switching to the fallback video, identify it as recorded live. Any scripted fallback is explicitly simulation.
 
 **1:50-2:20, captain:** “Each event records its type, time and mode. Camera frames are not saved by default. The exam window restricts navigation and clipboard actions. The optional Windows hook intercepts selected shortcuts, with an emergency release. We do not claim complete OS lockdown or verified photo-taking.”
 
-**2:20-3:00, Member 3:** “Our next step is a supervised pilot to measure false flags, missed scenarios and reviewer workload on ordinary laptops. Before deployment, the institution must establish its exam policies, accessibility accommodations and managed-device controls. We used pretrained public components and Codex/ChatGPT during development; the team can explain the resulting code.”
+**2:20-3:00, captain:** “Our next step is a supervised pilot to measure false flags, missed scenarios and reviewer workload on ordinary laptops. Before deployment, the institution must establish its exam policies, accessibility accommodations and managed-device controls. We used pretrained public components and Codex/ChatGPT during development; the team can explain the resulting code.”
 
 ## Jury answers
 

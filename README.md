@@ -6,9 +6,9 @@ Case 3 prototype for KRU and Qostanai Hub, Qostanai Industry Hackathon 2026. Loc
 
 | Member | Responsibility | Prompt guide |
 | --- | --- | --- |
-| Captain / Pro account | Core engineering, integration, final release and submission | [Member 1](docs/prompts/MEMBER_1_PRO.md) |
+| Captain + Codex / Pro account | Engineering, integration, presentation PDF, pitch, jury answers and submission | [Development](docs/prompts/MEMBER_1_PRO.md) and [presentation](docs/prompts/CAPTAIN_PITCH.md) |
 | Member 2 / Plus | Product testing, live test matrix, demo recording | [Member 2](docs/prompts/MEMBER_2_PLUS.md) |
-| Member 3 / Plus | Pitch, adoption case, limitations, jury answers | [Member 3](docs/prompts/MEMBER_3_PLUS.md) |
+| Member 3 | Optional rehearsal and test participation; no laptop-dependent deliverables | [Support role](docs/prompts/MEMBER_3_PLUS.md) |
 
 ## Run on Windows
 

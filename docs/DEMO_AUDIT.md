@@ -1,5 +1,7 @@
 # Demonstration readiness audit — 8 October 2026
 
+Latest corrections, check counts and presentation evidence are in [RELEASE_REVIEW.md](RELEASE_REVIEW.md). The sections below describe the earlier readiness review; the current Python suite has 26 passing tests.
+
 ## What works in the verified scope
 
 - Real YOLOv8n and MediaPipe models load and execute on a generated blank frame on this laptop.

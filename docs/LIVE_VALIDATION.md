@@ -33,7 +33,7 @@ The existing `data/<session-id>.json` report now includes `validation.trials`. N
 
 Processing median/p95 covers capture through JPEG encoding for measured iterations. Cue-to-event delay includes human reaction and the configured duration threshold; it is not exact physical action-to-alert latency. Trial frame rate describes this small measured interval. Do not infer population accuracy from it.
 
-After confirmation, the report lists missing required event types and unexpected event types for review. Unexpected does not automatically mean false: participant notes, transitions and accommodations still need interpretation. Gaze label counts and the expected-label fraction help detect reversed directions; they are not calibrated eye-tracker accuracy. Interrupted trials, missing samples and expected signals appearing before the cue remain inconclusive, with their observations retained.
+After confirmation, the report lists missing required event types and unexpected event types for review. Unexpected does not automatically mean false: participant notes, transitions and accommodations still need interpretation. Gaze label counts and the expected-label fraction help detect reversed directions; they are not calibrated eye-tracker accuracy. Interrupted trials, missing samples, any sample gap over two seconds (including start/end coverage) and expected signals appearing before the cue remain inconclusive, with their observations retained. Recalibration is blocked while a trial counts down or measures.
 
 `python scripts/read_live_status.py` reads metadata only and does not extend the UI heartbeat watchdog. It never requests camera frames. Complete private reports can be inspected locally; publish only an agreed anonymized aggregate.
 

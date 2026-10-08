@@ -8,6 +8,8 @@ flowchart LR
     Vision --> Rules[Temporal signal rules]
     Rules --> Journal[Local JSON review journal]
     Vision --> UI[Electron exam and monitor]
+    Vision --> Trials[Guided trials: numeric samples and human notes]
+    Trials --> Journal
     UI --> Env[Navigation clipboard and focus events]
     Env --> Journal
     UI --> Guard[Optional Windows keyboard hook]
@@ -29,9 +31,17 @@ Report storage is checked before protection begins. Later write failures remain 
 
 ## Data and local API boundary
 
-Annotated frames are returned from RAM to the local UI; they are not written to disk. Only session IDs, timestamps, signal metadata, phone boxes/confidence, counts and aggregate observations are logged. No names are required. Local reports remain under `data/` until a human deletes them; the folder is excluded from Git. Video/audio recording, biometrics enrollment and cloud analytics are absent. Downloaded model assets are excluded from Git.
+Annotated frames are returned from RAM to the local UI; they are not written to disk. Reports store session IDs, timestamps, signal metadata, event-time observations (including phone boxes/confidence) and errors. Guided trials additionally store numeric/categorical per-frame observations and human notes, as detailed below. Phone boxes/confidence can be retained with an event observation; they are not a frame-by-frame image recording. No names are required. Local reports remain under `data/` until a human deletes them; the folder is excluded from Git. Video/audio recording, biometrics enrollment and cloud analytics are absent. Downloaded model assets are excluded from Git.
 
-The API uses a per-process random HttpOnly, SameSite=Strict cookie, host validation and origin checks for mutations. No CORS permission is granted to external pages. This reduces browser-based cross-origin misuse; it is not a security boundary against a malicious local process, local administrator or modified application. The application is a single-user prototype with no institutional authentication or signed/tamper-proof evidence log.
+The API uses a per-process random HttpOnly, SameSite=Strict cookie, host validation and origin checks for mutations. Stop and security-event requests require the originating `session_id`. A delayed request for an older session cannot stop or add events to the current session. The frontend obtains the ID from start/status. Electron remembers the protected session, scopes its emergency stop to that ID, and makes new UI starts wait for pending main-process recovery. Internal watchdog and guard callbacks also bind to their originating session. No CORS permission is granted to external pages. This reduces browser-based cross-origin misuse; it is not a security boundary against a malicious local process, local administrator or modified application. The application is a single-user prototype with no institutional authentication or signed/tamper-proof evidence log.
+
+## Guided measurement
+
+The optional `/?validate=1` page records eight action types with a five-second countdown. Normal screen use lasts 60 seconds; other scenarios last eight seconds. Live calibrated observations and participant confirmation are required. Second-person tests require explicit consent. Recalibration is rejected while a trial counts down or measures.
+
+Reports keep whitelisted numeric/categorical samples: relative time, processing milliseconds, face count, gaze, head/iris deltas and phone counts, plus event timestamps and user-entered notes. Frames, audio and landmark arrays are excluded. User notes can contain personal information, so keep them factual and anonymous. Processing time covers capture through JPEG encoding. Cue-to-event delay includes participant reaction and rule dwell time; it does not measure exact physical action onset. Gaze directions refer to the participant.
+
+Trials with interrupted capture, no confirmation, early expected signals or a sample gap over two seconds are inconclusive. Coverage includes the cue-to-first and last-to-end gaps. Raw numeric observations remain available; inconclusive trials must not be counted as detection successes or failures. The two-second rule is an engineering validity gate, not a validated clinical or statistical standard.
 
 ## External components and AI disclosure
 

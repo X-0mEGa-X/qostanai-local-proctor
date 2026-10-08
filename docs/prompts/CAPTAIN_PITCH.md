@@ -1,33 +1,23 @@
-# Captain presentation and jury prompts
+# Captain and Codex presentation handoff
 
-This is the captain's backup drafting guide. Member 3 owns the pitch and presentation; the captain and Codex supply technical support and help create the files. Member 2 supplies actual test results and demo evidence. Use `docs/PITCH.md` as the current six-slide outline. Proposed future artifacts include `docs/PILOT_PLAN.md`, `docs/JURY_QA.md` and `submission/presentation.pdf`; their mention here does not mean they have been created.
+We own all former Member 3 tasks. The package is `submission/presentation.pdf`, `submission/presentation.pptx`, `docs/PITCH.md`, `docs/JURY_QA.md` and `docs/PILOT_PLAN.md`. Member 2 supplies human observations and operates the demo. There is no Member 3.
 
-## Step 1 build the judging outline
-
-```text
-We are the captain and Codex preparing the presentation for our three-person team. Case 3 is local proctoring for KRU/Qostanai Hub. Read the attached case/rules, architecture and current pitch draft. Create a six-slide outline that fits a three-minute presentation and addresses scoring: case fit 15, implementation 20, deployment/effect 20, innovation 15, demo 15, pitch/Q&A 15. Our app uses pretrained YOLOv8n phones, MediaPipe face meshes and calibrated coarse gaze/head signals, sustained-event rules, Electron restrictions and an optional Windows key hook. Phone raised is not proof of photography; full outside-window blocking is not complete. Disclose Codex/ChatGPT and external components. Do not invent accuracy, savings, clients or pilot results. Give one purpose and at most three short points per slide.
-```
-
-## Step 2 propose a grounded pilot
+## 1. Update from evidence
 
 ```text
-Create docs/PILOT_PLAN.md for a proposed small supervised KRU trial of our local proctoring prototype. Use the supplied case and actual architecture. Define the teacher/student workflow, hardware and offline setup, participant consent, accessibility review, human decision process, event retention/deletion, managed-device requirements, metrics and go/no-go gates. Benefits are hypotheses unless measured. If making external factual claims, search primary sources, link them and separate facts from assumptions. Do not provide unsupported legal compliance claims or invent cost/savings percentages. Keep this to 600 words.
+Continue our existing Case 3 presentation package. Read PITCH.md, RELEASE_REVIEW.md, VALIDATION.md, ARCHITECTURE.md and any newly supplied human test notes. Update claims only from actual observations. Keep software checks, simulation, generated-frame tests, human webcam tests and physical Windows shortcut tests separate. Preserve failures, denominators and unknowns. If no new notes exist, keep human outcomes untested. Do not save or upload camera footage.
 ```
 
-## Step 3 make the PDF and timed script
-
-Use the actual validation summary and Member 2's consented screenshots or video. Codex can prepare the editable deck and PDF; Member 3 checks team identity and delivery, and the captain checks technical claims. Inspect every slide before submission.
+## 2. Update the six slides
 
 ```text
-Create final slide text and speaker notes for our six-slide Case 3 presentation. Team name/members: [ACTUAL DETAILS]. Actual validation: [PASTE RESULTS]. Demonstration: [PASTE RUNBOOK AND LIVE/RECORDED/SIMULATED LABELS]. Use the approved outline, readable text and actual product screenshots where appropriate. Clearly label unvalidated features and deployment gaps. Put AI/pretrained component disclosure and limitations on the last slide. Write a timed script totaling at most three minutes: captain introduces/technical explanation, Member 2 runs about 65 seconds of demonstration, the captain explains pilot value and limits. Return final slide text and notes; if you can generate a deck, export a presentation PDF to submission/presentation.pdf. Do not invent missing evidence.
+Revise the existing six-slide PPTX/PDF and timed script to match the latest evidence. The captain narrates; Member 2 operates. Keep 180 seconds including a 65-second demonstration. Label the demo's real mode. Preserve the proposed status of the pilot, incomplete lockdown and photography proof, pretrained components and Codex/ChatGPT disclosure. Inspect every rendered slide. Do not invent team names or accuracy.
 ```
 
-## Step 4 rehearse and audit claims
+## 3. Rehearse
 
 ```text
-Review this final pitch/PDF text against the case, architecture and measured QA: [PASTE TEXT]. Flag unsupported claims, missing scoring points, confusing jargon and any implication that simulation is live evidence. Create docs/JURY_QA.md with 12 likely questions and concise defensible answers covering false positives, photography detection, gaze accuracy, face model, Windows bypasses/recovery, offline performance, privacy, component licensing, AI use, novelty and pilot adoption. Give a rehearsal checklist and cuts if the presentation exceeds three minutes.
+Act as a jury member using JURY_QA.md and the actual implementation. Ask one question at a time, assess my answer against recorded evidence and suggest a shorter truthful answer. Check the six criteria: case fit 15, implementation 20, deployment/effect 20, innovation 15, demo 15 and pitch/answers 15. These are available points, not our score.
 ```
 
-## Integration
-
-Member 3 hands the presentation to the captain for packaging with the final tested source. Keep missing team details or test evidence explicit until they are supplied. When using the older drafting prompts above, assign narration to Member 3 and demonstration to Member 2, following the current outline.
+Captain must check actual registration details, practice delivery and submit through the organizer's instructions. The generated deck cannot establish those human actions.

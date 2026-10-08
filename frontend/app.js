@@ -2,6 +2,7 @@ const $ = id => document.getElementById(id);
 let active = false, mode = 'simulation', busy = false, pollBusy = false, frameUrl, lastEventKey = '';
 let cancelStart = false;
 let lifecycleRevision = 0;
+let sessionId = null;
 const isDesktop = Boolean(window.desktop);
 $('runtime').textContent = isDesktop ? 'LOCAL DESKTOP' : 'BROWSER PREVIEW · LIMITED PROTECTION';
 function notice(message, error=false) { $('notice').textContent = message; $('notice').classList.toggle('error', error); }
@@ -13,7 +14,8 @@ async function api(path, body) {
   return response.status === 204 ? null : response.json();
 }
 function timeLabel(seconds) { return `${String(Math.floor(seconds/60)).padStart(2,'0')}:${String(Math.floor(seconds%60)).padStart(2,'0')}`; }
-async function signal(code) { if (active) { try { await api('security',{code}); } catch {} } }
+async function signal(code) { if (active && sessionId) { try { await api('security',{code,session_id:sessionId}); } catch {} } }
+async function stopSession(id) { if (id) await api('stop',{session_id:id}); }
 async function release() { if (isDesktop) await window.desktop.setProtected(false); }
 function clearFrame(title='Ready when you are', text='Live frames stay in memory on this device.') {
   $('camera').hidden=true; $('camera').removeAttribute('src'); $('camera-placeholder').hidden=false;
@@ -21,21 +23,23 @@ function clearFrame(title='Ready when you are', text='Live frames stay in memory
   $('placeholder-title').textContent=title; $('placeholder-text').textContent=text;
 }
 async function emergencyEnd() {
+  const endingId = sessionId;
   lifecycleRevision++;
   cancelStart = true;
   clearFrame('Ending session', 'Releasing monitoring and protection.');
   await release();
-  try { await api('stop',{}); active=false; notice('Emergency exit: session ended and protection released.'); }
+  try { await stopSession(endingId); if(sessionId===endingId)active=false; notice('Emergency exit: session ended and protection released.'); }
   catch(error) { notice('Emergency exit requested. '+error.message,true); }
 }
 async function endSession() {
   if (busy) return;
   busy=true;
+  const endingId = sessionId;
   lifecycleRevision++;
   clearFrame('Ending session', 'Releasing monitoring and protection.');
   try {
     await release();
-    await api('stop',{});
+    await stopSession(endingId);
     active=false;
     notice('Session ended. Protection released. Export the event report for human review.');
     await poll();
@@ -48,19 +52,24 @@ $('start').addEventListener('click', async () => {
   lifecycleRevision++;
   cancelStart=false;
   $('start').disabled=true;
+  let startingId = null;
   try {
     mode=$('mode').value;
     if (!$('consent').checked) throw new Error('Please confirm local monitoring consent before starting.');
-    await api('start',{mode,consent:true,native_guard:$('native-guard').checked,camera_index:Number($('camera-index').value)});
-    if(cancelStart){await api('stop',{});throw new Error('Start canceled by emergency exit. Protection released.');}
+    if(isDesktop)await window.desktop.prepareSession();
+    if(cancelStart)throw new Error('Start canceled by emergency exit.');
+    const started=await api('start',{mode,consent:true,native_guard:$('native-guard').checked,camera_index:Number($('camera-index').value)});
+    sessionId=startingId=started.session_id;
+    if(cancelStart){await stopSession(startingId);throw new Error('Start canceled by emergency exit. Protection released.');}
     active=true;
     if (isDesktop && !await window.desktop.setProtected(true)) throw new Error('Session ended before desktop protection was ready.');
-    if(cancelStart){await release();await api('stop',{});throw new Error('Start canceled. Protection released.');}
+    if(cancelStart){await release();await stopSession(startingId);throw new Error('Start canceled. Protection released.');}
     notice(mode==='simulation' ? 'SIMULATION: all vision signals are scripted for rehearsal. This is not a live detection demonstration.' : 'Live monitoring started. Look straight at the screen for 20 valid frames to calibrate gaze and head pose.');
     await poll();
   } catch(error) {
     await release();
-    if($('consent').checked){try{await api('stop',{});active=false;}catch{if(isDesktop)await window.desktop.emergencyStop();}}
+    if(startingId){try{await stopSession(startingId);active=false;}catch{if(isDesktop)await window.desktop.emergencyStop();}}
+    else if(isDesktop && $('consent').checked)await window.desktop.emergencyStop();
     notice(error.message,true);
   }
   finally {busy=false; $('start').disabled=active;}
@@ -110,7 +119,7 @@ async function poll(){
   if(pollBusy)return;pollBusy=true;
   const revision = lifecycleRevision;
   try{
-    const data=await api('status');if(revision!==lifecycleRevision)return;const wasActive=active;active=data.active;mode=data.mode;
+    const data=await api('status');if(revision!==lifecycleRevision)return;const wasActive=active;active=data.active;mode=data.mode;sessionId=data.session_id;
     if(wasActive&&!active){await release();notice(data.error||'Session ended. Protection released.',Boolean(data.error));}
     const obs=data.observation||{};
     $('start').disabled=active||busy||data.stopping;$('stop').disabled=!active;$('calibrate').disabled=!data.vision_ready;$('export').disabled=!data.session_id;

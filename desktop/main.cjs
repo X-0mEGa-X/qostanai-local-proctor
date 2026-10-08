@@ -9,6 +9,7 @@ const ORIGIN = `http://127.0.0.1:${PORT}`;
 const SMOKE = process.argv.includes('--smoke-test');
 let window, backend, protectedMode = false, quitting = false, backendLog = '';
 let protectionRevision = 0, emergencyTask;
+let protectedSessionId = null;
 
 function rendererAvailable() { return window && !window.isDestroyed() && !window.webContents.isDestroyed() && !window.webContents.isCrashed(); }
 function send(code) { if (rendererAvailable()) window.webContents.send('security-event', code); }
@@ -33,16 +34,21 @@ async function backendRequest(endpoint, body, timeout = 4500) {
   return response.json();
 }
 function emergency() {
+  const endingId = protectedSessionId;
   send('emergency_exit');
   protect(false);
   if (rendererAvailable()) window.webContents.send('emergency-exit');
   // Main-process recovery does not depend on renderer JavaScript being responsive.
   if (!emergencyTask && backend && backend.exitCode === null && !backend.killed) {
     emergencyTask = (async () => {
-      try { await backendRequest('security', {code:'emergency_exit'}, 1000); } catch {}
-      try { await backendRequest('stop', {}); }
+      try {
+        const session_id = endingId || (await backendRequest('status?heartbeat=false')).session_id;
+        if (!session_id) return;
+        try { await backendRequest('security', {code:'emergency_exit', session_id}, 1000); } catch {}
+        await backendRequest('stop', {session_id});
+      }
       catch { if (backend && backend.exitCode === null) backend.kill(); }
-    })().finally(() => { emergencyTask = null; });
+    })().finally(() => { emergencyTask = null; protectedSessionId = null; });
   }
   return emergencyTask || Promise.resolve();
 }
@@ -95,11 +101,16 @@ app.whenReady().then(async () => {
       if (!enabled) { protect(false); return false; }
       const revision = ++protectionRevision;
       const status = await backendRequest('status');
-      if (status.active && revision === protectionRevision) protect(true);
+      if (status.active && revision === protectionRevision) { protectedSessionId = status.session_id; protect(true); }
       return protectedMode;
     });
     window.webContents.on('unresponsive', emergency);
     ipcMain.handle('emergency-stop', event => event.sender === window.webContents ? emergency() : undefined);
+    ipcMain.handle('prepare-session', async event => {
+      if (event.sender !== window.webContents) throw new Error('Invalid sender');
+      await emergencyTask;
+      protectedSessionId = null;
+    });
     window.webContents.on('render-process-gone', emergency);
     // Always reserved for recovery, including when exam mode is active.
     const registered = globalShortcut.register('CommandOrControl+Shift+Q', emergency);
@@ -158,8 +169,36 @@ app.whenReady().then(async () => {
       })()`);
       await emergencyTask;
       result.stopRequestFailureReleased = !(await backendRequest('status')).active && !protectedMode;
+      // Hold the main-process emergency request while the renderer stops the old
+      // session. A new UI start must wait until main recovery finishes.
+      await window.webContents.executeJavaScript("document.getElementById('start').click()");
+      await new Promise(resolve => setTimeout(resolve, 9000));
+      fs.writeFileSync(path.join(ROOT, 'output/qa/simulation-demo.png'), (await window.webContents.capturePage()).toPNG());
+      const oldSession = (await backendRequest('status')).session_id;
+      const originalFetch = global.fetch;
+      let releaseSecurity;
+      const securityGate = new Promise(resolve => { releaseSecurity = resolve; });
+      global.fetch = async (url, options) => {
+        if (String(url) === `${ORIGIN}/api/security`) await securityGate;
+        return originalFetch(url, options);
+      };
+      try {
+        const pendingEmergency = emergency();
+        await new Promise(resolve => setTimeout(resolve, 900));
+        await window.webContents.executeJavaScript("document.getElementById('start').click()");
+        await new Promise(resolve => setTimeout(resolve, 300));
+        result.restartWaitsForEmergency = !(await backendRequest('status')).active;
+        releaseSecurity();
+        await pendingEmergency;
+        await new Promise(resolve => setTimeout(resolve, 1100));
+        const fresh = await backendRequest('status');
+        result.restartAfterEmergency = fresh.active && fresh.session_id !== oldSession;
+        await backendRequest('stop', {session_id:oldSession});
+        result.delayedStopPreservesRestart = (await backendRequest('status')).active;
+        await emergency();
+      } finally { releaseSecurity(); global.fetch = originalFetch; }
       // A crashed renderer cannot run the page's emergency handler.
-      await backendRequest('start', {mode:'simulation', consent:true});
+      protectedSessionId = (await backendRequest('start', {mode:'simulation', consent:true})).session_id;
       protect(true);
       const crashed = new Promise(resolve => window.webContents.once('render-process-gone', resolve));
       window.webContents.forcefullyCrashRenderer();
@@ -175,7 +214,7 @@ app.whenReady().then(async () => {
       await new Promise(resolve=>setTimeout(resolve,200));
       fs.writeFileSync(path.join(ROOT, 'output/qa/desktop-bottom.png'), (await window.webContents.capturePage()).toPNG());
       console.log(JSON.stringify(result));
-      if (result.runtime !== 'LOCAL DESKTOP' || result.modelState.includes('Checking') || !result.ended || !result.restartWorks || !result.stopDisabled || !result.codes.includes('phone_visible') || !result.downloadValid || !result.rendererCrashReleased || !result.stopRequestFailureReleased) throw new Error('Desktop UI smoke check failed');
+      if (result.runtime !== 'LOCAL DESKTOP' || result.modelState.includes('Checking') || !result.ended || !result.restartWorks || !result.stopDisabled || !result.codes.includes('phone_visible') || !result.downloadValid || !result.rendererCrashReleased || !result.stopRequestFailureReleased || !result.restartWaitsForEmergency || !result.restartAfterEmergency || !result.delayedStopPreservesRestart) throw new Error('Desktop UI smoke check failed');
       app.quit();
     }
   } catch (error) {

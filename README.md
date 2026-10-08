@@ -2,13 +2,15 @@
 
 Case 3 prototype for KRU and Qostanai Hub, Qostanai Industry Hackathon 2026. Local webcam inference, a protected desktop exam window, and a timeline of signals for human review.
 
-**Start with [the three-person plan](docs/TEAM_PLAN.md).** Copy the prompts from your own guide:
+**Latest release review:** [verified checks and remaining human tests](docs/RELEASE_REVIEW.md). [Presentation PDF](submission/presentation.pdf) and [editable PPTX](submission/presentation.pptx).
+
+**Start with [the current team plan](docs/TEAM_PLAN.md).** Copy the prompts from your own guide:
 
 | Member | Responsibility | Prompt guide |
 | --- | --- | --- |
-| Captain + Codex / Pro account | Engineering, integration, technical support and submission | [Development](docs/prompts/MEMBER_1_PRO.md) |
+| Captain + Codex / Pro account | Engineering, integration, presentation and submission packaging | [Development](docs/prompts/MEMBER_1_PRO.md) |
 | Member 2 / Plus | Product testing, live test matrix, demo recording | [Member 2](docs/prompts/MEMBER_2_PLUS.md) |
-| Member 3 | Pitch and presentation, supported by Codex drafts | [Presentation guide](docs/prompts/MEMBER_3_PLUS.md) and [six-slide outline](docs/PITCH.md) |
+| Captain + Codex (former Member 3 duties) | Six-slide PDF/PPTX, pitch, pilot and jury answers | [Presentation guide](docs/prompts/CAPTAIN_PITCH.md) and [timed script](docs/PITCH.md) |
 
 ## Run on Windows
 
@@ -60,7 +62,7 @@ npm test
 
 `check_vision.py` uses a generated blank frame to check that both models load and execute. It does not validate real-world accuracy. [Manual tests](docs/QA_CHECKLIST.md) must be completed on a real webcam before calling the live demo validated.
 
-See the [8 October readiness audit](docs/DEMO_AUDIT.md) for fixed defects, current limitations and five human checks. The [validation record](docs/VALIDATION.md) documents 16 passing Python tests, 2 passing Node checks, API integration, actual desktop report download and renderer-crash recovery.
+See the [8 October release review](docs/RELEASE_REVIEW.md) for fixed defects, presentation claims and five human checks. The latest [validation record](docs/VALIDATION.md) documents 26 passing Python tests, 2 passing Node checks, API integration, actual desktop report download, session isolation and renderer-crash recovery. Human webcam and physical Windows shortcut results remain pending.
 
 For measured human trials, use the [guided live validation procedure](docs/LIVE_VALIDATION.md) and open `http://127.0.0.1:8765/?validate=1` after starting the local backend. It adds timed cues and metadata-only trial results. The [proposed KRU pilot](docs/PILOT_PLAN.md) describes supervision, accessibility, managed Windows controls and evaluation measures.
 

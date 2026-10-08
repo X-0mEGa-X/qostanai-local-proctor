@@ -30,7 +30,10 @@ class StartInput(BaseModel):
     native_guard: bool = False
     camera_index: int = Field(default=0, ge=0, le=9)
 
-class SecurityInput(BaseModel):
+class SessionInput(BaseModel):
+    session_id: str = Field(min_length=1, max_length=80)
+
+class SecurityInput(SessionInput):
     code: str = Field(max_length=80)
 
 class TrialInput(BaseModel):
@@ -331,8 +334,8 @@ def start(options: StartInput):
     return {'session_id': monitor.session_id}
 
 @app.post('/api/stop')
-def stop():
-    monitor.stop()
+def stop(options: SessionInput):
+    monitor.stop(expected_session=options.session_id)
     return monitor.report()
 
 @app.post('/api/calibrate')
@@ -340,6 +343,8 @@ def calibrate():
     with monitor.lock:
         if not monitor.active or not monitor.vision:
             raise HTTPException(409, 'Live vision is not ready')
+        if monitor.trials.trials and monitor.trials.trials[-1]['state'] in ('countdown', 'measuring'):
+            raise HTTPException(409, 'Finish the current trial before recalibrating')
         monitor.calibration_requested = True
     return {'ok': True}
 
@@ -374,7 +379,7 @@ def confirm_trial(options: TrialConfirmation):
 def security(event: SecurityInput):
     if event.code not in {'focus_lost', 'tab_hidden', 'fullscreen_left', 'clipboard_blocked', 'shortcut_blocked', 'navigation_blocked', 'window_blocked', 'emergency_exit', 'desktop_guard_started', 'desktop_guard_stopped'}:
         raise HTTPException(400, 'Unknown event')
-    monitor.security(event.code)
+    monitor.security(event.code, expected_session=event.session_id)
     return {'ok': True}
 
 @app.get('/api/frame')

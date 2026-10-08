@@ -1,106 +1,70 @@
-# Six-slide outline for a three-minute presentation
+# Six-slide pitch and three-minute script
 
-Presenter and pitch owner: Member 3, with Codex supporting the draft. Member 2 operates the demonstration; the captain supports technical questions. This is an outline, not the final presentation PDF. Use the actual team name and three members' names on slide 1.
+The captain narrates; Member 2 operates the demonstration. Codex prepared the deck, script, pilot proposal and jury answers. There is no Member 3. The project title and assigned roles appear on slide 1 because actual registered team names were not supplied.
 
-Evidence: the implementation and checks recorded on 8 October 2026 in [VALIDATION.md](VALIDATION.md). Participant webcam trials remain pending. Requirements and judging weights come from the supplied Case 3 brief and hackathon rules, summarized in [CASE_AND_RULES.md](CASE_AND_RULES.md).
+Deliverables: [presentation PDF](../submission/presentation.pdf), [editable PPTX with notes](../submission/presentation.pptx), [jury answers](JURY_QA.md), [pilot proposal](PILOT_PLAN.md), and [claim audit](RELEASE_REVIEW.md). The deck has exactly six slides. The timing below allocates 180 seconds including a 65-second demonstration; a human timed rehearsal remains necessary.
 
-## 1. Team and problem — 0:00–0:20
+## 1. Team and problem: 0:00–0:20
 
-**Title:** Qostanai Local Proctor
+Slide: **Qostanai Local Proctor. Local exam signals for human review.** Captain owns engineering and pitch; Member 2 owns QA/demo. Reviewers need context for phones, absence and sustained off-screen attention.
 
-**On the slide:** Team name; three names and roles; Case 3, KRU and Qostanai Hub. Reviewers need evidence of phones, absence and sustained off-screen attention during a computer exam.
+Say: “We chose Case 3 from KRU and Qostanai Hub. Our prototype brings local webcam signals and exam-window events into one review timeline. I own engineering and this pitch, and our second teammate owns testing and demonstration. A person reviews each alert and decides what it means.”
 
-**Say:** “We are [team name], a team of three. We chose Case 3 from KRU and Qostanai Hub. Our prototype brings local webcam signals and exam-window events into one review timeline. A person reviews the evidence and decides what it means.”
+## 2. Case requirements and coverage: 0:20–0:45
 
-## 2. Case requirements and our approach — 0:20–0:45
+Slide: phone visibility/raised phone with YOLO and a position rule; face presence and attention with MediaPipe and calibration; Electron controls with an optional Windows key hook; local JSON reports. Photography proof and outside-app lockdown remain incomplete.
 
-**Title:** Case requirements and coverage
+Say: “YOLO detects phones. MediaPipe supplies face counts and head and iris features. Signals must persist before entering the timeline. Electron restricts navigation and clipboard use, with an optional Windows keyboard hook. Phone photography and control of all outside applications remain partial requirements.”
 
-| Case need | Current approach |
+## 3. Local architecture: 0:45–1:10
+
+Slide: memory-only camera frames, Python models, temporal rules and local JSON review. Electron connects through `127.0.0.1`. End session and Ctrl+Shift+Q provide release paths.
+
+Say: “Python processes camera frames on the laptop. Pretrained YOLO and MediaPipe feed sustained-signal rules. Electron displays the exam and review timeline through a local API. Frames stay in memory. JSON stores event metadata and guided-test observations. Our contribution is this integration, calibration and recoverable workflow.”
+
+## 4. Actual prototype and evidence: 1:10–2:15
+
+Slide: actual Electron screenshot captured in **SIMULATION on 8 October 2026**. **26 Python tests and 2 Node policy tests passed. API and Electron checks passed. Zero human webcam trials are documented.** No accuracy or live-latency measurement is claimed.
+
+Use the verified simulation path for the current pitch. Start simulation before this slide, with Windows hook unchecked. Keep its label visible. No footage or participant camera is needed.
+
+| Within the 65 seconds | Action |
 | --- | --- |
-| Phone in view or raised near the screen | YOLOv8n phone detection and a position heuristic |
-| Presence, second face and sustained down/side gaze | MediaPipe face count and calibrated head/iris features with dwell thresholds |
-| Exam protection | Electron navigation/clipboard controls and an optional Windows keyboard hook |
-| All functions together locally | Desktop dashboard and timestamped JSON review report |
+| 0–10 s | Identify SIMULATION, camera off and scripted phone-visible/raised events |
+| 10–25 s | Show the timeline, timestamps and event sources |
+| 25–40 s | End/release protection and export the report |
+| 40–50 s | Show the ended JSON session ID, ended time and event sources |
+| 50–65 s | State checks and the absence of human detection measurements |
 
-**Say:** “YOLO detects phones. MediaPipe provides face counts and head and iris features. Signals must persist before entering the review timeline. The desktop restricts navigation and clipboard use, with optional Windows key interception. Phone photography and complete control of outside applications remain partial requirements.”
+Say: “This is the actual prototype in simulation. Its vision signals are scripted, and the camera is off. Each event has a time and source. We release the session and export its report. Twenty-six Python tests, two desktop policy tests, API integration and Electron recovery/export checks pass. Camera fault checks use fake hardware. We have zero recorded human webcam trials, so accuracy and live latency remain unmeasured.”
 
-Evidence: case mapping, `backend/vision.py`, `backend/rules.py`, `desktop/policy.cjs`, `backend/windows_guard.py`.
+If the actual run fails, state the failure and show the dated screenshot or an existing exported simulation report. A screenshot alone does not establish working live detection. Switch to a live demo only after a consented human rehearsal and a revised evidence record. Do not record or upload the camera without explicit instruction.
 
-## 3. Local system architecture — 0:45–1:10
+## 5. Proposed pilot: 2:15–2:40
 
-**Title:** Processing on the exam laptop
+Slide: proposed 5 volunteers, 2 university Windows laptops and 20-minute practice sessions, supervised by a teacher. Measure misses, false alerts, timing, release and reviewer effort. Consent, accommodations and an agreed retention policy are conditions.
 
-**On the slide:** One flow connecting webcam frames in memory, Python/OpenCV, YOLO and MediaPipe, temporal rules, the Electron dashboard and a local JSON report. Show the separate exam-control path and emergency release. The local API binds to `127.0.0.1`.
+Say: “We propose five volunteers on two university Windows laptops, with a teacher supervising twenty-minute practice sessions. We would measure scenario misses, false alerts, latency and successful release, then compare reviewer effort. Reduced footage transfer and faster triage are hypotheses. This pilot needs university agreement, accommodations and a retention policy.”
 
-**Say:** “The Python service processes camera frames on the laptop. YOLO and MediaPipe feed sustained-signal rules. Electron displays the exam and review timeline. Reports contain event metadata, while camera frames stay in memory. Our contribution is the integration of calibrated signals, transparent reports and reversible protection. We use existing pretrained models.”
+## 6. Limits and next steps: 2:40–3:00
 
-Evidence: [ARCHITECTURE.md](ARCHITECTURE.md). No cloud inference or custom model training is implemented. Offline operation after setup still needs the human trial.
+Slide: coarse gaze, raised-phone heuristic, unfinished OS lockdown and pending human tests. Disclose YOLOv8n/COCO, MediaPipe, OpenCV/PyTorch, FastAPI, Electron and Codex/ChatGPT assistance. Next: human validation, supervised pilot and managed exam policies.
 
-## 4. Actual prototype and measured results — 1:10–2:15
+Say: “Gaze remains approximate, and a raised phone cannot establish photography. Complete OS lockdown is unfinished. We disclose pretrained YOLO, MediaPipe, the software libraries and Codex/ChatGPT assistance. Our next step is human validation, followed by a supervised pilot and managed exam policies.”
 
-**Title:** Prototype demonstration and verified checks
+## Judging map
 
-**On the slide:** The real application or a consented recording clearly labeled with its capture date. Evidence strip: **22 Python tests and 2 Node tests passed. API and Electron checks passed. Actual JSON download and renderer-crash release passed. Live accuracy: not measured.** Test counts describe software checks, not detection accuracy.
-
-Before the pitch, Member 2 starts a consented live session and calibrates with the actual demonstrator. Allow first model loading outside the three-minute slot. Use this sequence only after it passes the human rehearsal:
-
-| Time within this slide | Action and visible evidence |
-| --- | --- |
-| 0–6 s | Show LIVE mode and completed calibration |
-| 6–14 s | Hold a phone for at least 3 s; show its timeline entry |
-| 14–23 s | Look down for 5 s, then center; show the signal if detected |
-| 23–31 s | A second consenting participant enters for 3 s; show the face-count event |
-| 31–42 s | Attempt a previously tested clipboard action; show its environment event |
-| 42–53 s | Ctrl+Shift+Q; confirm release; export the ended JSON report |
-| 53–65 s | State verified checks and their limits |
-
-**Say while operating:** “These are the app's actual outputs. Each event carries its time and source. Our automated checks pass, including report download and recovery after a page crash. Both models also executed on a generated blank frame. We have not established participant detection accuracy.”
-
-**Measured results available now:** 22/22 Python and 2/2 Node checks passed. The generated 640×480 blank-frame model check returned zero faces and zero phones. The desktop test downloaded a valid ended-session report and confirmed release after a forced renderer crash. These tests did not use a participant webcam or physically press guarded keys. No measured webcam FPS, accuracy or savings are available.
-
-**Fallback:** Show a consented recording of a real run if one exists. Otherwise label the app SIMULATION and state that vision signals are scripted. Do not present test fixtures, scripted confidence values or simulation processing time as live measurements. Never claim a missed event was detected.
-
-## 5. Proposed university pilot and expected benefits — 2:15–2:40
-
-**Title:** Proposed supervised university pilot
-
-**On the slide:** A proposal: 5 consenting volunteers, 2 university Windows laptops, 20-minute practice sessions. Compare timestamped scenario notes with reports. Measure scenario misses, false flags, processing time and successful recovery. Compare reviewer time against the same scripted sessions reviewed manually.
-
-**Say:** “We propose a supervised practice pilot with five volunteers on two university laptops. We would measure scenario misses, false flags, processing time and recovery, then compare reviewer effort. Local processing may reduce the need to transfer footage, and timestamps may help reviewers find relevant moments. These benefits still need measurement.”
-
-Pilot conditions: university permission, consent, an agreed retention policy and accommodations, a supervisor present, no automatic penalties. Recovery and report checks must pass before operational assessment. Size and duration are proposed parameters, not completed work or an agreement.
-
-## 6. Limitations, external components and next steps — 2:40–3:00
-
-**Title:** Limits and next steps
-
-**On the slide:** Gaze/head proxy needs validation. Raised phone cannot establish photography. OS lockdown and signed evidence logs are unfinished. Credit YOLOv8n/COCO, MediaPipe, OpenCV/PyTorch, FastAPI and Electron. Disclose Codex/ChatGPT assistance. Next: live validation, supervised pilot and managed exam policies.
-
-**Say:** “Gaze remains approximate, and a raised phone does not prove photography. Complete OS lockdown is unfinished. We disclose pretrained YOLO, MediaPipe and our software libraries, plus Codex and ChatGPT assistance. Our next step is live validation, followed by a supervised university pilot and deployment review.”
-
-Evidence: architecture, dependency manifests and validation record. Dependency/model licensing must be reviewed before institutional distribution. No original detector training, certification or university adoption is claimed.
-
-## Judging coverage
-
-| Criterion | Points | Evidence |
+| Criterion | Points | Coverage |
 | --- | ---: | --- |
-| Case fit | 15 | Slides 1–2 map the requirements and disclose partial coverage |
-| Technical implementation | 20 | Slide 3 shows actual modules and local data flow; slide 4 shows verified behavior |
-| Deployment potential and effect | 20 | Slide 5 proposes a pilot, measurements and deployment conditions |
-| Innovation | 15 | Slides 2–3 describe the team's integration and calibrated review workflow; slide 6 credits existing models |
-| Working prototype and demo | 15 | Slide 4 shows the app, report and recovery, with truthful fallback labels |
-| Pitch and answers | 15 | Six slides total 180 seconds; Member 3 narrates, Member 2 operates, captain supports technical questions |
+| Case fit | 15 | Slides 1–2 map each group and expose partial coverage |
+| Technical implementation | 20 | Slides 3–4 show modules, local flow and actual software checks |
+| Deployment potential and effect | 20 | Slide 5 proposes a supervised pilot and measurable hypotheses |
+| Innovation | 15 | Slides 2–3 explain integrated calibration, temporal rules and recoverable local review; slide 6 credits existing models |
+| Working prototype and demo | 15 | Slide 4 shows actual application behavior and export; simulation is explicit |
+| Pitch and answers | 15 | Six slides, 180-second allocation, captain narration, Member 2 operation, `JURY_QA.md` |
 
-## Short jury answers
+These are coverage targets, not awarded points. Requirements/weights come from the supplied case/rules, summarized in `CASE_AND_RULES.md`. Evidence comes from code and `RELEASE_REVIEW.md`. No accuracy, savings, completed pilot or institutional endorsement is claimed.
 
-- **What accuracy do you have?** Software checks and model execution pass. Participant detection accuracy is unmeasured. The pilot will report conditions, trial counts, misses and false flags separately.
-- **Does looking away mean cheating?** No. It creates a review signal after the duration threshold. Human judgment and accommodations remain necessary.
-- **Can you prove a photo was taken?** No. Box position and area indicate a raised phone. Camera aim and shutter action are unresolved.
-- **Can protection be bypassed?** Yes. Other capture methods, elevated applications and OS recovery paths remain. Full control requires managed devices and institutional policies.
-- **Why local?** Frames and event metadata stay on the laptop without cloud inference. Installation and performance on target laptops still need verification.
-- **What did your team create?** Integration, calibrated temporal rules, the dashboard, local reports, protection and recovery. We disclose pretrained models, libraries and AI assistance.
-- **Has a university adopted it?** No completed pilot or adoption is established. Slide 5 is a proposal.
-- **What happens on failure?** Main-process emergency stop, a backend watchdog and cleanup/storage failure handling are implemented. Automated failure tests pass. Physical camera and keyboard tests remain pending.
+## Rehearsal cuts
 
-The supplied documents provide competition requirements. They do not authorize contacting the university, submitting materials or claiming endorsement.
+Open the report destination and presentation before speaking. Explain component names once. If behind time, shorten the timeline explanation on slide 4 by ten seconds; keep the mode label, release/export, unmeasured accuracy and final limitations. Do not rush or skip emergency recovery. Verify registered team identity and presentation playback before submission.

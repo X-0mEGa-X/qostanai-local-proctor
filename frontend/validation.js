@@ -56,9 +56,9 @@ if (new URLSearchParams(window.location.search).has('validate')) {
         showSelection();
       }
       if(trial){
-        const evidence=trial.assessable?`Missed event types: ${trial.missed_event_types.join(', ')||'none'}. Unexpected alerts: ${trial.unexpected_event_count} (${trial.unexpected_event_types.join(', ')||'none'}); review with your notes.`:'Not assessed: confirmation, valid timing and captured samples are required.';
+        const evidence=trial.assessable?`Missed event types: ${trial.missed_event_types.join(', ')||'none'}. Unexpected alerts: ${trial.unexpected_event_count} (${trial.unexpected_event_types.join(', ')||'none'}); review with your notes.`:'Not assessed: confirmation, valid timing and samples with no gap over 2 seconds are required.';
         const warnings=[trial.early_signal?'Expected signal appeared before the cue. Note whether you acted early or the detector was wrong, then repeat.':'',trial.interrupted?'Session interrupted this trial.':''].filter(Boolean).join(' ');
-        $('trial-result').textContent=`Trial ${trial.number}: ${trial.scenario}. ${trial.processed_frames} processed frames. Processing p50/p95: ${trial.processing_ms_p50??'—'} / ${trial.processing_ms_p95??'—'} ms. Gaze counts: ${JSON.stringify(trial.gaze_counts)}. ${evidence} ${warnings}`;
+        $('trial-result').textContent=`Trial ${trial.number}: ${trial.scenario}. ${trial.processed_frames} processed frames. Largest sample gap: ${trial.max_sample_gap_s}s. Processing p50/p95: ${trial.processing_ms_p50??'—'} / ${trial.processing_ms_p95??'—'} ms. Gaze counts: ${JSON.stringify(trial.gaze_counts)}. ${evidence} ${warnings}`;
       }
     }catch(error){$('trial-state').textContent='Test connection unavailable';$('trial-start').disabled=true;}
     finally{guidePolling=false;}

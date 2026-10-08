@@ -84,11 +84,16 @@ class TrialBook:
         latencies = sorted(sample['processing_ms'] for sample in samples)
         gazes = Counter(sample.get('gaze', 'unavailable') for sample in samples)
         codes = {event['code'] for event in trial['events']}
-        valid = bool(trial['completed_as_instructed'] and samples and not trial['interrupted'] and not trial['early_signal'])
+        sample_times = [0] + [sample['t_s'] for sample in samples] + [trial['seconds']]
+        max_gap = max(b-a for a, b in zip(sample_times, sample_times[1:]))
+        # Include cue-to-first and last-to-end gaps; an idle status poll is not a camera sample.
+        coverage_ok = bool(samples) and max_gap <= 2
+        valid = bool(trial['completed_as_instructed'] and coverage_ok and not trial['interrupted'] and not trial['early_signal'])
         return {'number': trial['number'], 'scenario': trial['scenario'], 'state': trial['state'],
                 'completed_as_instructed': trial['completed_as_instructed'], 'notes': trial['notes'],
                 'interrupted': trial['interrupted'], 'early_signal': trial['early_signal'],
                 'assessable': valid, 'processed_frames': len(samples),
+                'coverage_ok': coverage_ok, 'max_sample_gap_s': round(max_gap, 3),
                 'processing_ms_p50': round(statistics.median(latencies), 1) if latencies else None,
                 'processing_ms_p95': latencies[math.ceil(.95*len(latencies))-1] if latencies else None,
                 'processing_ms_max': max(latencies) if latencies else None,

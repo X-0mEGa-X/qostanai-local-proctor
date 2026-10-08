@@ -1,5 +1,16 @@
 # Prototype validation status
 
+## Final release review on 8 October 2026
+
+After fixing session isolation and trial coverage, **26 Python tests and 2 Node policy tests passed**. API integration and Electron simulation smoke passed, including emergency release, restart, delayed old-session stop/security rejection, valid report download, injected failed page-stop recovery and forced renderer-crash release. Fake camera tests covered unavailable camera, failed read, cleanup exception, model-load failure, inactive error reports and restart without overwriting previous reports.
+
+The stale-stop regression failed before the fix: a delayed stop for session A ended newly started B. A separate reproducer showed that one sample could make a stalled trial assessable. Both defects now have passing regression coverage. Recalibration during a measuring trial is rejected.
+
+**No human observations were supplied or found.** At audit start, all 30 local reports were simulation, with zero guided trials or human confirmations. These files are not participant trial counts. The separate `open it` task also found no human observations. Physical Windows shortcut behavior, participant phone/face/gaze detection, left/right signs, live latency and false-alert rate remain unknown. The camera and lighting were not tested or recorded. No footage was saved or uploaded.
+
+Device: i5-1135G7 2.40 GHz, approximately 8 GB RAM, Windows 11 Home Single Language 10.0.26200. Native guard was off in the current Electron simulation run; fake Win32/camera objects were used in unit checks. See [the release review](RELEASE_REVIEW.md) for evidence boundaries, preserved teammate work, presentation claim audit and the short human test gate. Entries below are historical snapshots, not the current test count.
+
+
 ## Guided live validation preparation on 8 October 2026
 
 The guided recorder passes 22 Python tests, including six new checks for confirmation, metadata-only storage, missed/unexpected events, direction mismatches, incomplete/early trials and second-person consent. The 2 Node policy tests, API integration and Electron smoke checks also pass after this addition. The Electron check ran on a separate local port in simulation, including actual JSON download and recovery after a failed page stop request or renderer crash.

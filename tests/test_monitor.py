@@ -1,5 +1,6 @@
 """Failure-path tests use fake hardware and never activate the webcam or OS hook."""
 from pathlib import Path
+import json
 import tempfile
 import threading
 import time
@@ -7,7 +8,7 @@ import unittest
 from unittest.mock import Mock, patch
 
 from fastapi import HTTPException
-from backend.app import Monitor, StartInput, TrialInput, trial
+from backend.app import Monitor, StartInput, TrialInput, trial, calibrate
 
 
 class FakeGuard:
@@ -61,6 +62,59 @@ class MonitorTests(unittest.TestCase):
         self.assertFalse(monitor.active)
         self.assertFalse(monitor.guard.enabled)
         fake_vision.close.assert_called_once()
+        report = monitor.report()
+        self.assertIn('camera disconnected', report['error'])
+        self.assertIn('Cleanup failed', report['error'])
+        self.assert_failed_report_and_restart(monitor)
+
+    def assert_failed_report_and_restart(self, monitor):
+        report = monitor.report()
+        report_path = Path(self.folder.name) / 'data' / f"{report['session_id']}.json"
+        saved = json.loads(report_path.read_text(encoding='utf-8'))
+        self.assertFalse(saved['active'])
+        self.assertTrue(saved['ended_at'])
+        self.assertTrue(saved['error'])
+        self.assertIsNone(monitor.jpeg)
+        monitor.start(StartInput(consent=True, mode='simulation'))
+        self.assertTrue(monitor.active)
+        self.assertNotEqual(monitor.session_id, report['session_id'])
+        monitor.stop()
+        self.assertEqual(saved, json.loads(report_path.read_text(encoding='utf-8')))
+
+    def test_camera_unavailable_and_read_failure_release_and_allow_restart(self):
+        for opened in (False, True):
+            with self.subTest(opened=opened):
+                monitor = self.monitor()
+                cap, vision = Mock(), Mock()
+                cap.isOpened.return_value = opened
+                cap.read.return_value = (False, None)
+                with patch('backend.app.model_status', return_value={'a':True}), patch('backend.app.Vision', return_value=vision), patch('cv2.VideoCapture', return_value=cap):
+                    monitor.start(StartInput(consent=True, mode='live', native_guard=True))
+                    monitor.worker.join(3)
+                self.assertFalse(monitor.worker.is_alive())
+                self.assertFalse(monitor.guard.enabled)
+                cap.release.assert_called_once()
+                vision.close.assert_called_once()
+                self.assert_failed_report_and_restart(monitor)
+
+    def test_model_load_failure_releases_guard_and_allows_restart(self):
+        monitor = self.monitor()
+        with patch('backend.app.model_status', return_value={'a':True}), patch('backend.app.Vision', side_effect=RuntimeError('model load failed')), patch('cv2.VideoCapture') as cap:
+            monitor.start(StartInput(consent=True, mode='live', native_guard=True))
+            monitor.worker.join(3)
+            cap.assert_not_called()
+        self.assertFalse(monitor.guard.enabled)
+        self.assert_failed_report_and_restart(monitor)
+
+    def test_recalibration_cannot_change_an_active_trial(self):
+        monitor = self.monitor()
+        monitor.active = True
+        monitor.vision = Mock()
+        monitor.trials.begin('left', time.monotonic())
+        with patch('backend.app.monitor', monitor), self.assertRaises(HTTPException) as error:
+            calibrate()
+        self.assertEqual(error.exception.status_code, 409)
+        self.assertFalse(monitor.calibration_requested)
 
     def test_cancel_during_model_loading_does_not_open_camera(self):
         monitor = self.monitor()

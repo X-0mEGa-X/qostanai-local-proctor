@@ -7,7 +7,7 @@ If your chat cannot read the repository, attach the case/rules and paste the rel
 ## Step 1 make an executable test plan
 
 ```text
-I am Member 2 of a three-person hackathon team using ChatGPT Plus. We chose Case 3, local proctoring for KRU/Qostanai Hub. The captain/Codex owns the Python vision and Electron/security code. I own QA and demo. Read the attached case/rules, README, architecture and QA checklist. Turn the checklist into a 90-minute prioritized manual test plan with exact steps, expected signals and an empty actual-result column. Cover neutral baseline, phone, raised phone, down/side gaze, absence, second face, camera failure, copy/paste, Windows keys, recovery and report export. Distinguish simulation from live evidence. Do not invent results or change backend/desktop code. Return only the plan and a compact CSV header.
+I am Member 2 of our hackathon team using ChatGPT Plus. We chose Case 3, local proctoring for KRU/Qostanai Hub. The captain/Codex owns the Python vision and Electron/security code. I own QA and demo. Read the attached case/rules, README, architecture and QA checklist. Turn the checklist into a 90-minute prioritized manual test plan with exact steps, expected signals and an empty actual-result column. Cover neutral baseline, phone, raised phone, down/side gaze, absence, second face, camera failure, copy/paste, Windows keys, recovery and report export. Distinguish simulation from live evidence. Do not invent results or change backend/desktop code. Return only the plan and a compact CSV header.
 ```
 
 ## Step 2 analyze observations

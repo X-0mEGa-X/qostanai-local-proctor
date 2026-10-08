@@ -47,15 +47,16 @@ try:
     fails('/api/start', {'consent': True, 'mode': 'invented'}, 400)
     result = json.load(request('/api/start', {'consent': True, 'mode': 'simulation'}))
     fails('/api/start', {'consent': True}, 409)
-    fails('/api/security', {'code': 'invented'}, 400)
-    request('/api/security', {'code': 'clipboard_blocked'})
+    fails('/api/security', {'code': 'invented', 'session_id': result['session_id']}, 400)
+    request('/api/security', {'code': 'clipboard_blocked', 'session_id': result['session_id']})
     for _ in range(11):
         time.sleep(1)
         status = json.load(request('/api/status'))
     codes = {event['code'] for event in status['events']}
     assert {'phone_visible', 'phone_raised', 'clipboard_blocked'} <= codes, codes
     assert all(event['source'] == ('environment' if event['code'] == 'clipboard_blocked' else 'simulation') for event in status['events'])
-    report = json.load(request('/api/stop', {}))
+    fails('/api/stop', {}, 422)
+    report = json.load(request('/api/stop', {'session_id': result['session_id']}))
     assert report['active'] is False
     assert report['session_id'] == result['session_id']
     saved = json.loads((ROOT/'data'/f"{result['session_id']}.json").read_text(encoding='utf-8'))
@@ -64,7 +65,15 @@ try:
     assert request('/api/frame').status == 204
     fails('/api/calibrate', {}, 409)
     assert report['storage_error'] is None and report['elapsed_s'] >= 10
-    print(json.dumps({'api_check': 'passed', 'signal_codes': sorted(codes), 'auth_origin_consent_conflict_checks': 'passed', 'saved_report': 'passed'}))
+    restarted = json.load(request('/api/start', {'consent': True, 'mode': 'simulation'}))
+    assert restarted['session_id'] != result['session_id']
+    request('/api/stop', {'session_id': result['session_id']})
+    request('/api/security', {'code': 'emergency_exit', 'session_id': result['session_id']})
+    after_stale_stop = json.load(request('/api/status'))
+    assert after_stale_stop['active'] and after_stale_stop['session_id'] == restarted['session_id'], 'Delayed stop from the old session ended the restarted session'
+    assert not after_stale_stop['events'], 'Stale security event contaminated the new session'
+    request('/api/stop', {'session_id': restarted['session_id']})
+    print(json.dumps({'api_check': 'passed', 'signal_codes': sorted(codes), 'auth_origin_consent_conflict_checks': 'passed', 'saved_report': 'passed', 'stale_stop_and_security_isolation': 'passed'}))
 finally:
     process.terminate()
     try:

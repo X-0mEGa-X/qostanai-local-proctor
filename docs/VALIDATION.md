@@ -1,5 +1,13 @@
 # Prototype validation status
 
+## Submission demonstration on 8 October 2026
+
+One 60-second screen recording of the actual Electron application is supplied as `submission/simulation-demo.mp4`. It was captured at 4 frames/second and encoded as 1920x1080 H.264, 12 frames/second (720 output frames); full decoding passed. This is recording frame rate, not vision inference FPS. The camera was not opened and the native Windows keyboard hook was unchecked. The recording contains two scripted sessions: the first ended through the main-process emergency-release path; a new session then started and ended normally. No physical keys were tested.
+
+The actual Export button downloaded `submission/simulation-report.json` from the first session. It has `mode=simulation`, `active=false`, an end timestamp and zero validation trials. Its nine event codes are phone_visible, phone_raised, look_down, look_side, multiple_faces, no_face, desktop_guard_started, emergency_exit and desktop_guard_stopped. Vision event sources are simulation; desktop events are environment. The recording shows the exported-report verification and a distinct session ID after restart. Sampled video frames were visually inspected, including phone signals, inactive emergency state, restart and final End.
+
+This adds simulation evidence only. Human webcam trials and physical Windows shortcut trials remain **0 documented**. Gaze direction correctness, real detection misses/false alerts and latency remain unknown. The existing 26 Python and 2 Node checks were not recounted as new participant tests. No participant footage was recorded or uploaded.
+
 ## Final release review on 8 October 2026
 
 After fixing session isolation and trial coverage, **26 Python tests and 2 Node policy tests passed**. API integration and Electron simulation smoke passed, including emergency release, restart, delayed old-session stop/security rejection, valid report download, injected failed page-stop recovery and forced renderer-crash release. Fake camera tests covered unavailable camera, failed read, cleanup exception, model-load failure, inactive error reports and restart without overwriting previous reports.

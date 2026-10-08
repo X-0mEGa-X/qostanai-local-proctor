@@ -1,6 +1,6 @@
 # Six-slide pitch and three-minute script
 
-The captain narrates; Member 2 operates the demonstration. Codex prepared the deck, script, pilot proposal and jury answers. There is no Member 3. The project title and assigned roles appear on slide 1 because actual registered team names were not supplied.
+The captain narrates; Member 2 operates the demonstration. Codex prepared the deck, script, pilot proposal and jury answers. The latest roster is The Mentalist: captain Artur Bulatov, Aibek Zainiddin and Adilet Derdybekov, Astana IT University, Astana. Slide 1 now includes these user-supplied details.
 
 Deliverables: [presentation PDF](../submission/presentation.pdf), [editable PPTX with notes](../submission/presentation.pptx), [jury answers](JURY_QA.md), [pilot proposal](PILOT_PLAN.md), and [claim audit](RELEASE_REVIEW.md). The deck has exactly six slides. The timing below allocates 180 seconds including a 65-second demonstration; a human timed rehearsal remains necessary.
 
@@ -8,7 +8,7 @@ Deliverables: [presentation PDF](../submission/presentation.pdf), [editable PPTX
 
 Slide: **Qostanai Local Proctor. Local exam signals for human review.** Captain owns engineering and pitch; Member 2 owns QA/demo. Reviewers need context for phones, absence and sustained off-screen attention.
 
-Say: “We chose Case 3 from KRU and Qostanai Hub. Our prototype brings local webcam signals and exam-window events into one review timeline. I own engineering and this pitch, and our second teammate owns testing and demonstration. A person reviews each alert and decides what it means.”
+Say: “We are The Mentalist from Astana IT University: Artur Bulatov, captain, with Aibek Zainiddin and Adilet Derdybekov. We chose Case 3 from KRU and Qostanai Hub. Our prototype combines local webcam signals and exam-window events into one timeline for human review.”
 
 ## 2. Case requirements and coverage: 0:20–0:45
 

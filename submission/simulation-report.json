@@ -1,0 +1,176 @@
+{
+  "session_id": "3e1f2cdb-1139-4ccd-9794-55a9433daa39",
+  "mode": "simulation",
+  "active": false,
+  "started_at": "2026-10-08T17:00:13.885915+00:00",
+  "ended_at": "2026-10-08T17:00:53.947028+00:00",
+  "elapsed_s": 40,
+  "error": null,
+  "storage_error": null,
+  "validation": {
+    "privacy": "Numeric/categorical metadata only; no images, video, audio or face landmarks.",
+    "timing": "Processing time is capture through JPEG encoding. Cue-to-event includes reaction and dwell time; physical action onset is not measured.",
+    "direction_reference": "Expected left/right refer to the participant, not the preview image.",
+    "trials": []
+  },
+  "events": [
+    {
+      "code": "desktop_guard_started",
+      "severity": "medium",
+      "source": "environment",
+      "title": "Desktop guard started",
+      "id": 1,
+      "timestamp": "2026-10-08T17:00:13.933058+00:00",
+      "elapsed_s": 0
+    },
+    {
+      "code": "phone_visible",
+      "severity": "high",
+      "title": "Phone visible",
+      "duration_s": 1.03,
+      "observation": {
+        "face_count": 1,
+        "phones": [
+          {
+            "confidence": 0.92,
+            "bbox": [
+              0.57,
+              0.25,
+              0.73,
+              0.65
+            ],
+            "raised": true
+          }
+        ],
+        "gaze": "center",
+        "calibrated": true,
+        "calibration_samples": 20
+      },
+      "id": 2,
+      "timestamp": "2026-10-08T17:00:21.116495+00:00",
+      "elapsed_s": 7.2,
+      "source": "simulation"
+    },
+    {
+      "code": "phone_raised",
+      "severity": "high",
+      "title": "Phone raised near screen - review",
+      "duration_s": 1.3,
+      "observation": {
+        "face_count": 1,
+        "phones": [
+          {
+            "confidence": 0.92,
+            "bbox": [
+              0.57,
+              0.25,
+              0.73,
+              0.65
+            ],
+            "raised": true
+          }
+        ],
+        "gaze": "center",
+        "calibrated": true,
+        "calibration_samples": 20
+      },
+      "id": 3,
+      "timestamp": "2026-10-08T17:00:21.384176+00:00",
+      "elapsed_s": 7.5,
+      "source": "simulation"
+    },
+    {
+      "code": "look_down",
+      "severity": "medium",
+      "title": "Sustained downward gaze/head pose",
+      "duration_s": 3.05,
+      "observation": {
+        "face_count": 1,
+        "phones": [],
+        "gaze": "down",
+        "calibrated": true,
+        "calibration_samples": 20
+      },
+      "id": 4,
+      "timestamp": "2026-10-08T17:00:31.130435+00:00",
+      "elapsed_s": 17.2,
+      "source": "simulation"
+    },
+    {
+      "code": "multiple_faces",
+      "severity": "high",
+      "title": "More than one face",
+      "duration_s": 1.02,
+      "observation": {
+        "face_count": 2,
+        "phones": [],
+        "gaze": "center",
+        "calibrated": true,
+        "calibration_samples": 20
+      },
+      "id": 5,
+      "timestamp": "2026-10-08T17:00:36.995888+00:00",
+      "elapsed_s": 23.1,
+      "source": "simulation"
+    },
+    {
+      "code": "no_face",
+      "severity": "medium",
+      "title": "No face in frame",
+      "duration_s": 3.14,
+      "observation": {
+        "face_count": 0,
+        "phones": [],
+        "gaze": "unavailable",
+        "calibrated": true,
+        "calibration_samples": 20
+      },
+      "id": 6,
+      "timestamp": "2026-10-08T17:00:46.074246+00:00",
+      "elapsed_s": 32.2,
+      "source": "simulation"
+    },
+    {
+      "code": "look_side",
+      "severity": "medium",
+      "title": "Sustained side gaze/head pose",
+      "duration_s": 3.11,
+      "observation": {
+        "face_count": 1,
+        "phones": [],
+        "gaze": "left",
+        "calibrated": true,
+        "calibration_samples": 20
+      },
+      "id": 7,
+      "timestamp": "2026-10-08T17:00:53.117385+00:00",
+      "elapsed_s": 39.2,
+      "source": "simulation"
+    },
+    {
+      "code": "emergency_exit",
+      "severity": "medium",
+      "source": "environment",
+      "title": "Emergency exit",
+      "id": 8,
+      "timestamp": "2026-10-08T17:00:53.902710+00:00",
+      "elapsed_s": 40
+    },
+    {
+      "code": "desktop_guard_stopped",
+      "severity": "medium",
+      "source": "environment",
+      "title": "Desktop guard stopped",
+      "id": 9,
+      "timestamp": "2026-10-08T17:00:53.917831+00:00",
+      "elapsed_s": 40
+    }
+  ],
+  "policy": "Human review required; no automatic cheating verdict.",
+  "privacy": "No video or images saved. Event metadata stays on this computer.",
+  "limits": [
+    "Coarse calibrated gaze/head proxy",
+    "Phone raised is a position heuristic, not proof of photography",
+    "Window protection is a prototype, not a managed OS lockdown"
+  ]
+}

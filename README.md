@@ -1,8 +1,12 @@
 # Qostanai Local Proctor
 
+**The Mentalist — Astana IT University, Astana.** Captain: Artur Bulatov. Members: Aibek Zainiddin and Adilet Derdybekov.
+
 Case 3 prototype for KRU and Qostanai Hub, Qostanai Industry Hackathon 2026. Local webcam inference, a protected desktop exam window, and a timeline of signals for human review.
 
 **Latest release review:** [verified checks and remaining human tests](docs/RELEASE_REVIEW.md). [Presentation PDF](submission/presentation.pdf) and [editable PPTX](submission/presentation.pptx).
+
+**Organizer package:** [delivery details](docs/SUBMISSION_DELIVERY.md), [Russian technical summary](submission/technical-summary.pdf), [60-second simulation video](submission/simulation-demo.mp4), [exported simulation report](submission/simulation-report.json), and [copy-ready email](submission/EMAIL_RU.txt). The final ZIP contains the complete source so judges do not need private GitHub access. Registration and submission have not been performed.
 
 **Start with [the current team plan](docs/TEAM_PLAN.md).** Copy the prompts from your own guide:
 

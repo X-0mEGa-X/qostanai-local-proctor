@@ -1,21 +1,27 @@
 # Hackathon submission checklist
 
-The captain and Codex own the presentation and all former Member 3 duties. Member 2 supplies human test and demonstration evidence. The six-slide PDF and editable PPTX are now in `submission/`, with a timed script, pilot proposal and jury answers in `docs/`. The captain still checks registered team identity, presentation playback and final submission.
+The captain and Codex prepared the source, presentation, pitch, technical description, proposed pilot and organizer package. The supplied identity is The Mentalist, Astana IT University, Astana; Artur Bulatov (captain), Aibek Zainiddin and Adilet Derdybekov; contact zajniddinajbek@gmail.com.
 
-Use the conservative deadline: 8 October 2026, 23:59, as repeated in rules sections 1.6 and 5.3. Confirm the timezone and registration date conflict with the organizer; schedule an internal upload several hours earlier. Demo Day is 16 October in Kostanay.
+## Prepared and checked
 
-- [ ] Team registered; exact team identity and captain contacts confirmed.
-- [ ] Final PDF presentation opens correctly, fits a three-minute explanation, and contains actual team details.
-- [ ] Live prototype runs on the demo laptop; phone/face/gaze/environment controls shown together.
-- [ ] Real demo video plays without special access; any simulation is clearly labeled.
-- [ ] Repository or source archive reachable by the judging team. A private repository link alone does not grant judges access; use the organizer's access mechanism or provide a clean source archive.
-- [ ] README includes fresh setup, start, consent, recovery and offline conditions.
-- [ ] Architecture, data, external components, AI tools, limitations and deployment conditions disclosed.
-- [ ] Real QA outcomes recorded; no invented accuracy, savings or deployment claims.
-- [ ] No secrets, student video, biometric records or nonpublic partner data included in sources.
-- [ ] Review third-party software/model terms before distribution.
-- [ ] Everyone can explain one core path: frame -> features -> sustained signal -> human review.
-- [ ] Captain uploads through the organizer's actual submission form and saves the confirmation/receipt.
-- [ ] Freeze a Git commit/release matching the submitted files; keep a local offline source backup.
+- [x] Six-slide PDF and editable PPTX contain the supplied team identity; rendered pages inspected and PPTX structure/layout checked.
+- [x] Three-minute script, all six judging categories, jury answers and proposed KRU pilot included.
+- [x] Actual application video is clearly labeled SIMULATION; 60-second MP4 fully decoded and sampled visually. Its exported JSON is included.
+- [x] Software checks and reproduced defect fixes are recorded, separately from unperformed human tests.
+- [x] README explains setup, consent, start, recovery and the internet requirement for initial dependency/model downloads.
+- [x] Architecture, stored data, external models/libraries, AI assistance, limitations and deployment conditions disclosed.
+- [x] Original source and lock files are included in the organizer archive; private GitHub access is not required to inspect them.
+- [x] Runtime dependencies/models, private reports, camera footage and credentials are excluded. The public demonstration report contains scripted events only.
+- [x] Copy-ready Russian email and recipient-office evidence are included; email asks for the actual upload link and receipt.
 
-The registration link appears in the source rules. Do not assume that it is also the prototype submission form; confirm the organizer's instructions.
+## Not represented as completed
+
+- [ ] Registration and attendance confirmation. Team identity is supplied; registration status and captain phone are unknown.
+- [ ] Human webcam trials and physical shortcut/emergency-key tests. There are zero documented trials; live accuracy, gaze signs and latency remain unknown.
+- [ ] Native PowerPoint playback, timed human rehearsal, offline live run and setup on a second laptop.
+- [ ] Institutional approval, managed Windows lockdown, accessibility validation and dependency/model terms review for operational deployment.
+- [ ] Actual submission and organizer receipt. The user is the sender; no email or form has been sent.
+
+Use 8 October 2026 at 23:59 as the conservative deadline from sections 1.6/5.3. The document has conflicting dates and specifies no timezone. Section 5.3 requires an online upload. The supplied registration form has no upload field; the prepared email asks the published Smart Center contact for the selection-stage upload link. See `SUBMISSION_DELIVERY.md`.
+
+The archive's `MANIFEST.json` records the frozen Git commit and SHA-256 of every included file. The source snapshot is also preserved locally as `output/qostanai-local-proctor-source.zip`. A prepared package is not proof of submission or acceptance.

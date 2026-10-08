@@ -13,5 +13,7 @@ __pycache__/
 dist/
 output/qa/
 output/*.zip
+output/*.eml
+output/package-validation.json
 tests/results/*.json
 tests/results/*.csv

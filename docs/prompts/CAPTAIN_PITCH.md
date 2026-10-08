@@ -1,6 +1,6 @@
 # Captain and Codex presentation handoff
 
-We own all former Member 3 tasks. The package is `submission/presentation.pdf`, `submission/presentation.pptx`, `docs/PITCH.md`, `docs/JURY_QA.md` and `docs/PILOT_PLAN.md`. Member 2 supplies human observations and operates the demo. There is no Member 3.
+We own all former Member 3 tasks. The package is `submission/presentation.pdf`, `submission/presentation.pptx`, `docs/PITCH.md`, `docs/JURY_QA.md` and `docs/PILOT_PLAN.md`. Member 2 supplies human observations and operates the demo. The latest roster is Artur Bulatov, Aibek Zainiddin and Adilet Derdybekov; preparation remains with the captain and Codex.
 
 ## 1. Update from evidence
 

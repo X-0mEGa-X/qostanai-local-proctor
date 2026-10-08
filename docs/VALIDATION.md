@@ -1,5 +1,15 @@
 # Prototype validation status
 
+## Guided live validation preparation on 8 October 2026
+
+The guided recorder passes 22 Python tests, including six new checks for confirmation, metadata-only storage, missed/unexpected events, direction mismatches, incomplete/early trials and second-person consent. The 2 Node policy tests, API integration and Electron smoke checks also pass after this addition. The Electron check ran on a separate local port in simulation, including actual JSON download and recovery after a failed page stop request or renderer crash.
+
+The new live page at `/?validate=1` provides a five-second cue countdown, 60 seconds of normal screen use and eight-second scenario trials. Per-frame processing median/p95 and cue-to-event delay are distinct measurements. The latter includes participant reaction and dwell time. Left/right ground truth refers to the participant. No detector sign or threshold was changed without live evidence.
+
+**Human results are pending.** No participant trial was completed during preparation. The idle local service is ready; the camera opens only when the user consents and starts Live. No camera footage was saved or uploaded. Future confirmed results belong in a separate dated entry, keeping any private metadata reports outside Git.
+
+See [the guided procedure](LIVE_VALIDATION.md) and [proposed KRU pilot](PILOT_PLAN.md).
+
 ## Audit on 8 October 2026
 
 The working tree was clean before this audit. Existing teammates' changes were not overwritten. The following checks ran locally after the fixes; participant webcam accuracy and physical keyboard interception remain unmeasured.

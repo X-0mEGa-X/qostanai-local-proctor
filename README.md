@@ -62,6 +62,8 @@ npm test
 
 See the [8 October readiness audit](docs/DEMO_AUDIT.md) for fixed defects, current limitations and five human checks. The [validation record](docs/VALIDATION.md) documents 16 passing Python tests, 2 passing Node checks, API integration, actual desktop report download and renderer-crash recovery.
 
+For measured human trials, use the [guided live validation procedure](docs/LIVE_VALIDATION.md) and open `http://127.0.0.1:8765/?validate=1` after starting the local backend. It adds timed cues and metadata-only trial results. The [proposed KRU pilot](docs/PILOT_PLAN.md) describes supervision, accessibility, managed Windows controls and evaluation measures.
+
 ## Project map
 
 `backend/`: vision, temporal rules, local API, Windows hook. `desktop/`: Electron isolation and window protection. `frontend/`: dashboard and sample exam. `docs/`: requirements, architecture, team plan, prompts, pitch and submission checklist. `scripts/`: setup, downloads and diagnostic checks.

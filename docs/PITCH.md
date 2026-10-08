@@ -41,7 +41,7 @@ Evidence: [ARCHITECTURE.md](ARCHITECTURE.md). No cloud inference or custom model
 
 **Title:** Prototype demonstration and verified checks
 
-**On the slide:** The real application or a consented recording clearly labeled with its capture date. Evidence strip: **16 Python tests and 2 Node tests passed. API and Electron checks passed. Actual JSON download and renderer-crash release passed. Live accuracy: not measured.** Test counts describe software checks, not detection accuracy.
+**On the slide:** The real application or a consented recording clearly labeled with its capture date. Evidence strip: **22 Python tests and 2 Node tests passed. API and Electron checks passed. Actual JSON download and renderer-crash release passed. Live accuracy: not measured.** Test counts describe software checks, not detection accuracy.
 
 Before the pitch, Member 2 starts a consented live session and calibrates with the actual demonstrator. Allow first model loading outside the three-minute slot. Use this sequence only after it passes the human rehearsal:
 
@@ -57,7 +57,7 @@ Before the pitch, Member 2 starts a consented live session and calibrates with t
 
 **Say while operating:** “These are the app's actual outputs. Each event carries its time and source. Our automated checks pass, including report download and recovery after a page crash. Both models also executed on a generated blank frame. We have not established participant detection accuracy.”
 
-**Measured results available now:** 16/16 Python and 2/2 Node checks passed. The generated 640×480 blank-frame model check returned zero faces and zero phones. The desktop test downloaded a valid ended-session report and confirmed release after a forced renderer crash. These tests did not use a participant webcam or physically press guarded keys. No measured webcam FPS, accuracy or savings are available.
+**Measured results available now:** 22/22 Python and 2/2 Node checks passed. The generated 640×480 blank-frame model check returned zero faces and zero phones. The desktop test downloaded a valid ended-session report and confirmed release after a forced renderer crash. These tests did not use a participant webcam or physically press guarded keys. No measured webcam FPS, accuracy or savings are available.
 
 **Fallback:** Show a consented recording of a real run if one exists. Otherwise label the app SIMULATION and state that vision signals are scripted. Do not present test fixtures, scripted confidence values or simulation processing time as live measurements. Never claim a missed event was detected.
 

@@ -15,6 +15,25 @@
   <section class="page-heading"><div><div class="eyebrow">A CLEARER VIEW OF EXAM INTEGRITY</div><h1>Session monitor<span>.</span></h1><p>Observe signals. Review context. Keep decisions human.</p></div><div class="session-meta"><span id="session-label">NO ACTIVE SESSION</span><b id="elapsed">00:00</b></div></section>
   <div id="notice" class="notice" role="status">Choose a mode and start a session. Simulation uses scripted signals; live mode requires a webcam and downloaded models.</div>
   <section class="stats"><article><span>FACE PRESENCE</span><strong id="faces">—</strong><small id="face-caption">Waiting for session</small></article><article><span>GAZE / HEAD PROXY</span><strong id="gaze">—</strong><small id="calibration">Calibration required in live mode</small></article><article><span>PHONE SIGNAL</span><strong id="phone">—</strong><small>YOLOv8n · COCO cell phone</small></article><article><span>REVIEW EVENTS</span><strong id="event-count">0</strong><small>Signals require human review</small></article></section>
+  <section id="validation-panel" class="panel validation-panel" hidden>
+    <div class="panel-heading"><h2>Guided live validation · metadata only</h2><strong id="trial-state" aria-live="polite">Start a live session first</strong></div>
+    <div class="validation-body">
+      <p id="trial-instruction">Choose Live, consent and start the session. Look at the screen until calibration finishes.</p>
+      <div class="validation-actions"><label for="trial-scenario">Trial</label><select id="trial-scenario">
+        <option value="normal">1. Normal screen use · 60 s</option><option value="phone">2. Show phone · 8 s</option>
+        <option value="raised_phone">3. Raise phone near screen · 8 s</option><option value="down">4. Look down · 8 s</option>
+        <option value="left">5. Look to YOUR left · 8 s</option><option value="right">6. Look to YOUR right · 8 s</option>
+        <option value="absence">7. Leave camera view · 8 s</option><option value="second_face">8. Second consenting person · 8 s</option>
+      </select><button id="trial-start" class="primary" disabled>Start trial with 5 s countdown</button></div>
+      <label id="second-consent-row" class="check-row" hidden><input id="second-consent" type="checkbox"><span>The second person consents to local processing and metadata logging.</span></label>
+      <div id="trial-confirmation" hidden><label for="trial-notes">What happened? Note delayed actions, misses, unexpected alerts, glasses or lighting.</label>
+        <input id="trial-notes" maxlength="1000" placeholder="Optional factual notes; avoid names">
+        <div class="validation-actions"><button id="trial-confirm">Completed as instructed</button><button id="trial-incomplete">Not completed / interrupted</button></div>
+      </div>
+      <p id="trial-result">Results are unconfirmed until you report that you performed the action. Left/right mean your own left/right.</p>
+      <p class="validation-footnote">Stay centered with the phone out of view during the countdown. Act at DO NOW, hold until DONE, then return to normal. Wait 3 s between trials. Ctrl+Shift+Q ends monitoring. No camera footage is saved.</p>
+    </div>
+  </section>
   <div class="workspace-grid">
     <section class="panel camera-panel"><div class="panel-heading"><h2>Camera observation</h2><span id="mode-badge" class="pill">STANDBY</span></div><div class="camera-stage"><img id="camera" alt="Local annotated webcam feed" hidden><div id="camera-placeholder"><div class="face-outline"><span>+</span></div><h3 id="placeholder-title">Ready when you are</h3><p id="placeholder-text">Live frames stay in memory on this device.</p></div><div class="camera-overlay"><span id="signal-dot" class="signal-dot"></span><span id="camera-status">CAMERA OFF</span><span id="latency">— ms inference</span></div><div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div></div><div class="camera-footer"><span>○ No frame recording</span><span>⌁ Calibrated gaze proxy</span><span>□ 640 × 480 target</span></div></section>
     <section class="panel controls-panel"><div class="panel-heading"><h2>Session controls</h2><span class="step-number">01</span></div>
@@ -31,5 +50,5 @@
     <section class="panel event-panel"><div class="panel-heading"><h2>Review timeline</h2><span class="pill muted">HUMAN REVIEW</span></div><div id="events" class="events"><div class="empty-state"><span>◎</span><h3>No signals to review</h3><p>Events appear only after a sustained signal crosses its threshold.</p></div></div></section>
   </div>
   <footer>Prototype v0.1 <span>Phone position does not prove photography. Gaze is an estimate. No automatic sanctions.</span><b>Built for Case 03</b></footer>
-</main><script src="/assets/app.js"></script>
+</main><script src="/assets/app.js"></script><script src="/assets/validation.js"></script>
 </body></html>

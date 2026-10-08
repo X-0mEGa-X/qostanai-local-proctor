@@ -17,6 +17,7 @@ from pydantic import BaseModel, Field
 from .rules import TemporalRules
 from .vision import Vision, model_status
 from .windows_guard import WindowsGuard
+from .validation import TrialBook
 
 ROOT = Path(__file__).resolve().parents[1]
 TOKEN = secrets.token_urlsafe(32)
@@ -31,6 +32,14 @@ class StartInput(BaseModel):
 
 class SecurityInput(BaseModel):
     code: str = Field(max_length=80)
+
+class TrialInput(BaseModel):
+    scenario: str = Field(max_length=30)
+    second_person_consents: bool = False
+
+class TrialConfirmation(BaseModel):
+    completed: bool
+    notes: str = Field(default='', max_length=1000)
 
 class Monitor:
     def __init__(self):
@@ -55,6 +64,7 @@ class Monitor:
         self.last_heartbeat = 0
         self.security_last = {}
         self.calibration_requested = False
+        self.trials = TrialBook()
 
     def record(self, event):
         with self.lock:
@@ -82,6 +92,7 @@ class Monitor:
                     'started_at': self.started_at if self.session_id else None, 'ended_at': self.ended_at,
                     'elapsed_s': round(time.monotonic()-self.started) if self.active else self.elapsed_at_end or 0,
                     'error': self.error, 'storage_error': self.storage_error,
+                    'validation': self.trials.report(),
                     'events': list(self.events), 'policy': 'Human review required; no automatic cheating verdict.',
                     'privacy': 'No video or images saved. Event metadata stays on this computer.',
                     'limits': ['Coarse calibrated gaze/head proxy', 'Phone raised is a position heuristic, not proof of photography',
@@ -123,6 +134,7 @@ class Monitor:
             self.security_last = {}
             self.calibration_requested = False
             self.rules = TemporalRules()
+            self.trials = TrialBook()
             self.error, self.storage_error, self.jpeg = None, None, None
             self.latency_ms = 0
             self.started = time.monotonic()
@@ -154,6 +166,7 @@ class Monitor:
             session_id, guard, worker = self.session_id, self.guard, self.worker
             self.active = False
             self.stop_flag.set()
+            self.trials.interrupt(time.monotonic())
             self.jpeg = None
             self.ended_at = self.ended_at or datetime.now(timezone.utc).isoformat()
             if self.elapsed_at_end is None:
@@ -234,8 +247,13 @@ class Monitor:
                         break
                     self.latency_ms = round((time.perf_counter()-t0)*1000)
                     self.observation, self.jpeg = obs, jpeg
-                    for event in self.rules.update(obs, time.monotonic()):
+                    observed_at = time.monotonic()
+                    events = self.rules.update(obs, observed_at)
+                    trial_finished = self.trials.observe(obs, self.latency_ms, observed_at, events)
+                    for event in events:
                         self.record(event)
+                    if trial_finished:
+                        self.persist()
                 flag.wait(.15 if self.mode == 'live' else .25)
         except Exception as error:
             with self.lock:
@@ -291,10 +309,15 @@ def health():
     return {'ok': True, 'application': 'qostanai-local-proctor'}
 
 @app.get('/api/status')
-def status():
+def status(heartbeat: bool = True):
     with monitor.lock:
-        monitor.last_heartbeat = time.monotonic()
+        now = time.monotonic()
+        if heartbeat:
+            monitor.last_heartbeat = now
+        if monitor.trials.tick(now):
+            monitor.persist()
         return {'active': monitor.active, 'mode': monitor.mode, 'session_id': monitor.session_id,
+                'validation': monitor.trials.status(now),
                 'observation': monitor.observation, 'events': list(monitor.events), 'error': monitor.error,
                 'elapsed_s': (round(time.monotonic()-monitor.started) if monitor.active else monitor.elapsed_at_end or 0),
                 'latency_ms': monitor.latency_ms, 'models': model_status(),
@@ -319,6 +342,33 @@ def calibrate():
             raise HTTPException(409, 'Live vision is not ready')
         monitor.calibration_requested = True
     return {'ok': True}
+
+@app.post('/api/trial')
+def trial(options: TrialInput):
+    with monitor.lock:
+        if not monitor.active or monitor.mode != 'live' or not monitor.observation.get('calibrated'):
+            raise HTTPException(409, 'Start LIVE mode and complete calibration first')
+        obs = monitor.observation
+        if obs.get('face_count') != 1 or obs.get('gaze') != 'center' or obs.get('phones'):
+            raise HTTPException(409, 'Return to one face, centered gaze, and no phone before starting a trial')
+        if options.scenario == 'second_face' and not options.second_person_consents:
+            raise HTTPException(400, 'Confirm that the second person consents before this trial')
+        try:
+            monitor.trials.begin(options.scenario, time.monotonic())
+        except ValueError as error:
+            raise HTTPException(400, str(error)) from error
+        monitor.persist()
+        return monitor.trials.status(time.monotonic())
+
+@app.post('/api/trial/confirm')
+def confirm_trial(options: TrialConfirmation):
+    with monitor.lock:
+        try:
+            monitor.trials.confirm(options.completed, options.notes)
+        except ValueError as error:
+            raise HTTPException(409, str(error)) from error
+        monitor.persist()
+        return monitor.trials.status(time.monotonic())
 
 @app.post('/api/security')
 def security(event: SecurityInput):

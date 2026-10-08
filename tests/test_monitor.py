@@ -7,7 +7,7 @@ import unittest
 from unittest.mock import Mock, patch
 
 from fastapi import HTTPException
-from backend.app import Monitor, StartInput
+from backend.app import Monitor, StartInput, TrialInput, trial
 
 
 class FakeGuard:
@@ -112,6 +112,22 @@ class MonitorTests(unittest.TestCase):
         self.assertFalse(report['active'])
         self.assertTrue(report['storage_error'])
         self.assertIn('clipboard_blocked', [event['code'] for event in report['events']])
+
+    def test_trial_rejects_simulation_and_requires_second_person_consent(self):
+        monitor = self.monitor()
+        monitor.active = True
+        monitor.observation = {'face_count':1, 'gaze':'center', 'calibrated':True, 'phones':[]}
+        with patch('backend.app.monitor', monitor):
+            with self.assertRaises(HTTPException) as rejected:
+                trial(TrialInput(scenario='normal'))
+            self.assertEqual(rejected.exception.status_code, 409)
+            monitor.mode = 'live'
+            with self.assertRaises(HTTPException) as rejected:
+                trial(TrialInput(scenario='second_face'))
+            self.assertEqual(rejected.exception.status_code, 400)
+            self.assertEqual(monitor.trials.trials, [])
+            trial(TrialInput(scenario='second_face', second_person_consents=True))
+            self.assertEqual(len(monitor.trials.trials), 1)
 
 
 if __name__ == '__main__':

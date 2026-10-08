@@ -40,6 +40,8 @@ class VisionTests(unittest.TestCase):
         self.assertFalse(np.any(raw), 'Caller owns the raw frame')
         self.assertTrue(np.any(annotated))
         self.assertEqual(len(obs['phones']), 1)
+        for key in ('save', 'save_txt', 'save_crop', 'show'):
+            self.assertIs(vision.yolo.predict.call_args.kwargs[key], False)
 
     def test_face_loss_resets_reported_calibration_progress(self):
         vision = self.vision()

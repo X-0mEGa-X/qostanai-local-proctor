@@ -43,7 +43,8 @@ class Vision:
         cv2, mp, np = self.cv2, self.mp, self.np
         h, w = frame.shape[:2]
         annotated = frame.copy()
-        result = self.yolo.predict(frame, imgsz=640, conf=0.35, classes=[67], device='cpu', verbose=False)[0]
+        result = self.yolo.predict(frame, imgsz=640, conf=0.35, classes=[67], device='cpu', verbose=False,
+                                   save=False, save_txt=False, save_crop=False, show=False)[0]
         phones = []
         for box in result.boxes:
             x1, y1, x2, y2 = [float(x) for x in box.xyxy[0]]
@@ -90,7 +91,8 @@ class Vision:
             gaze = 'down'
         elif abs(dyaw) > 20 or abs(dex) > .18:
             gaze = 'left' if dyaw < -20 or dex < -.18 else 'right'
-        observation.update(gaze=gaze, yaw_deg=round(float(dyaw), 1), pitch_deg=round(float(dpitch), 1))
+        observation.update(gaze=gaze, yaw_deg=round(float(dyaw), 1), pitch_deg=round(float(dpitch), 1),
+                           iris_dx=round(float(dex), 4), iris_dy=round(float(dey), 4))
         return observation, annotated
 
     def close(self):
